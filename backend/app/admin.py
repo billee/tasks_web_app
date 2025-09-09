@@ -9,7 +9,6 @@ from app.schemas import UserCreate, UserResponse
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
-# Verify if current user is an admin
 def require_admin(current_user: User = Depends(get_current_user)):
     if not current_user.is_admin:
         raise HTTPException(
@@ -18,7 +17,6 @@ def require_admin(current_user: User = Depends(get_current_user)):
         )
     return current_user
 
-# Get all users
 @router.get("/users", response_model=List[UserResponse])
 async def get_all_users(
     db: Session = Depends(get_db),
@@ -27,7 +25,6 @@ async def get_all_users(
     users = db.query(User).all()
     return users
 
-# Create a new user
 @router.post("/users", response_model=UserResponse)
 async def create_user(
     user_data: UserCreate,
@@ -43,11 +40,13 @@ async def create_user(
         )
     
     # Create new user
+    from app.auth import get_password_hash
     hashed_password = get_password_hash(user_data.password)
     db_user = User(
         email=user_data.email,
         hashed_password=hashed_password,
         is_active=True,
+        is_admin=False,
         created_by=admin.email
     )
     
@@ -56,22 +55,3 @@ async def create_user(
     db.refresh(db_user)
     
     return db_user
-
-# Deactivate a user
-@router.put("/users/{user_id}/deactivate")
-async def deactivate_user(
-    user_id: int,
-    db: Session = Depends(get_db),
-    admin: User = Depends(require_admin)
-):
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    
-    user.is_active = False
-    db.commit()
-    
-    return {"message": "User deactivated successfully"}
