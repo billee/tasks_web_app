@@ -160,6 +160,7 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
+        <div className="dashboard-grid"></div>
         <div className="user-creation-form">
           <h2>Create New User</h2>
           <form onSubmit={handleCreateUser}>
