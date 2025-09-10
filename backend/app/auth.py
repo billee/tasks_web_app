@@ -34,6 +34,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 class Token(BaseModel):
     access_token: str
     token_type: str
+    user_name: str 
 
 class TokenData(BaseModel):
     email: Optional[str] = None
@@ -111,7 +112,11 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
     
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "user_name": user.name if hasattr(user, 'name') and user.name else user.email.split('@')[0]  # ADD THIS LINE
+    }
 
 # Admin-specific login
 @router.post("/admin/login", response_model=Token)
@@ -158,7 +163,11 @@ async def admin_login(
         expires_delta=access_token_expires
     )
     
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "user_name": user.name if hasattr(user, 'name') and user.name else user.email.split('@')[0]  # ADD THIS LINE
+    }
 
 @router.post("/logout", response_model=LogoutResponse)
 async def logout(current_user: User = Depends(get_current_user)):

@@ -20,6 +20,7 @@ export const authService = {
         // Store the token
         localStorage.setItem('authToken', response.data.access_token);
         localStorage.setItem('userEmail', email);
+        localStorage.setItem('userName', response.data.user_name || response.data.name || '');
         
         return { success: true, data: response.data };
       }
@@ -53,6 +54,7 @@ export const authService = {
         // Store the token and admin status
         localStorage.setItem('authToken', response.data.access_token);
         localStorage.setItem('userEmail', email);
+        localStorage.setItem('userName', response.data.user_name || response.data.name || '');
         localStorage.setItem('isAdmin', 'true');
         
         return { success: true, data: response.data };
@@ -76,6 +78,7 @@ export const authService = {
       // Clear local storage regardless of backend response
       localStorage.removeItem('authToken');
       localStorage.removeItem('userEmail');
+      localStorage.removeItem('userName'); 
       localStorage.removeItem('isAdmin');
       
       return { success: true, message: 'Logged out successfully' };
@@ -83,6 +86,7 @@ export const authService = {
       // Even if backend call fails, clear local storage
       localStorage.removeItem('authToken');
       localStorage.removeItem('userEmail');
+      localStorage.removeItem('userName'); 
       localStorage.removeItem('isAdmin');
       
       return { 
@@ -96,6 +100,7 @@ export const authService = {
   logoutQuick() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userEmail');
+    localStorage.removeItem('userName');
     localStorage.removeItem('isAdmin');
   },
 

@@ -26,16 +26,32 @@ const AdminDashboard = () => {
         
           setUsers(mockUsers);
         
-        // Get current user email from localStorage and find user info
+        // Get current user info from localStorage
         const userEmail = localStorage.getItem('userEmail');
+        const userName = localStorage.getItem('userName') || 'Administrator'; // Get stored name or default
+        
         if (userEmail) {
           // Try to find the user in the users list, or create a mock current user
           const currentUserData = mockUsers.find(user => user.email === userEmail) || 
-                                  { email: userEmail, is_admin: true, id: 999, is_active: true, created_at: new Date().toISOString() };
+                                  { 
+                                    email: userEmail, 
+                                    name: userName,
+                                    is_admin: true, 
+                                    id: 999, 
+                                    is_active: true, 
+                                    created_at: new Date().toISOString() 
+                                  };
           setCurrentUser(currentUserData);
         } else {
           // Fallback for demonstration
-          setCurrentUser({ email: 'admin@example.com', is_admin: true, id: 999, is_active: true, created_at: new Date().toISOString() });
+          setCurrentUser({ 
+            email: 'admin@example.com', 
+            name: userName,
+            is_admin: true, 
+            id: 999, 
+            is_active: true, 
+            created_at: new Date().toISOString() 
+          });
         }
       } catch (error) {
         console.error('Failed to fetch users:', error);
@@ -114,27 +130,45 @@ const AdminDashboard = () => {
       // Fallback: clear localStorage directly and reload
       localStorage.removeItem('authToken');
       localStorage.removeItem('userEmail');
+      localStorage.removeItem('userName');
       localStorage.removeItem('isAdmin');
       
       window.location.reload();
     }
   };
 
-  // Helper function to get user initials
-  const getUserInitials = (email) => {
-    if (!email) return 'A';
-    const parts = email.split('@')[0].split('.');
+  // Helper function to get user initials from name or email
+  const getUserInitials = (user) => {
+    if (!user) return 'A';
+    
+    if (user.name) {
+      // If we have a name, use the first letter of each word
+      const nameParts = user.name.split(' ');
+      if (nameParts.length >= 2) {
+        return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+      }
+      return user.name.substring(0, 2).toUpperCase();
+    }
+    
+    // Fallback to email if no name
+    const parts = user.email.split('@')[0].split('.');
     if (parts.length >= 2) {
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
-    return email.substring(0, 2).toUpperCase();
+    return user.email.substring(0, 2).toUpperCase();
   };
 
-  // Helper function to format display name
-  const getDisplayName = (email) => {
-    if (!email) return 'Administrator';
-    const username = email.split('@')[0];
-    // Convert email username to a more readable format
+  // Helper function to get display name
+  const getDisplayName = (user) => {
+    if (!user) return 'Administrator';
+    
+    // Use the name if available, otherwise fall back to email processing
+    if (user.name) {
+      return user.name;
+    }
+    
+    // Fallback to processing email if no name
+    const username = user.email.split('@')[0];
     return username.split('.').map(part => 
       part.charAt(0).toUpperCase() + part.slice(1)
     ).join(' ');
@@ -158,12 +192,12 @@ const AdminDashboard = () => {
         <div className="admin-profile">
           <div className="profile-info">
             <div className="admin-name">
-              {currentUser ? getDisplayName(currentUser.email) : 'Administrator'}
+              {currentUser ? getDisplayName(currentUser) : 'Administrator'}
             </div>
             <div className="admin-role">Administrator</div>
           </div>
           <div className="profile-avatar">
-            {currentUser ? getUserInitials(currentUser.email) : 'A'}
+            {currentUser ? getUserInitials(currentUser) : 'A'}
           </div>
           <button className="logout-btn" onClick={handleLogout}>
             Log Out

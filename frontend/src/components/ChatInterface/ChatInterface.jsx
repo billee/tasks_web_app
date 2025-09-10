@@ -52,6 +52,7 @@ const ChatInterface = () => {
     const handleLogout = () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userEmail');
+    localStorage.removeItem('userName');
     window.location.href = '/login';
     };
 
