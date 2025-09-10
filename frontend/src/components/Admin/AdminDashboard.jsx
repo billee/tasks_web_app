@@ -3,6 +3,7 @@ import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [newUser, setNewUser] = useState({
     email: '',
     password: ''
@@ -13,16 +14,28 @@ const AdminDashboard = () => {
     // Simulate fetching users from an API
     const fetchUsers = async () => {
       try {
-          // This would be replaced with an actual API call
-          await new Promise(resolve => setTimeout(resolve, 1000));
+        // This would be replaced with an actual API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // Mock data for demonstration
+        // Mock data for demonstration
           const mockUsers = [
           { id: 1, email: 'user1@example.com', is_active: true, created_at: new Date().toISOString() },
           { id: 2, email: 'user2@example.com', is_active: true, created_at: new Date().toISOString() }
         ];
-          
+        
           setUsers(mockUsers);
+        
+        // Get current user email from localStorage and find user info
+        const userEmail = localStorage.getItem('userEmail');
+        if (userEmail) {
+          // Try to find the user in the users list, or create a mock current user
+          const currentUserData = mockUsers.find(user => user.email === userEmail) || 
+                                  { email: userEmail, is_admin: true, id: 999, is_active: true, created_at: new Date().toISOString() };
+          setCurrentUser(currentUserData);
+        } else {
+          // Fallback for demonstration
+          setCurrentUser({ email: 'admin@example.com', is_admin: true, id: 999, is_active: true, created_at: new Date().toISOString() });
+        }
       } catch (error) {
         console.error('Failed to fetch users:', error);
       } finally {
@@ -75,9 +88,35 @@ const AdminDashboard = () => {
   };
 
   const handleLogout = () => {
-    // This would handle the logout logic
+    // Clear localStorage items
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('isAdmin');
+    
+    // Redirect to login page (you might want to use React Router for this)
     console.log('Logging out...');
-    alert('Logout functionality would be implemented here');
+    alert('Logout functionality - redirecting to login page');
+    // window.location.href = '/login'; // Uncomment when you have a login page
+  };
+
+  // Helper function to get user initials
+  const getUserInitials = (email) => {
+    if (!email) return 'A';
+    const parts = email.split('@')[0].split('.');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return email.substring(0, 2).toUpperCase();
+  };
+
+  // Helper function to format display name
+  const getDisplayName = (email) => {
+    if (!email) return 'Administrator';
+    const username = email.split('@')[0];
+    // Convert email username to a more readable format
+    return username.split('.').map(part => 
+      part.charAt(0).toUpperCase() + part.slice(1)
+    ).join(' ');
   };
 
   // Calculate stats
@@ -97,10 +136,14 @@ const AdminDashboard = () => {
         
         <div className="admin-profile">
           <div className="profile-info">
-            <div className="admin-name">John Smith</div>
+            <div className="admin-name">
+              {currentUser ? getDisplayName(currentUser.email) : 'Administrator'}
+            </div>
             <div className="admin-role">Administrator</div>
           </div>
-          <div className="profile-avatar">JS</div>
+          <div className="profile-avatar">
+            {currentUser ? getUserInitials(currentUser.email) : 'A'}
+          </div>
           <button className="logout-btn" onClick={handleLogout}>
             Log Out
           </button>

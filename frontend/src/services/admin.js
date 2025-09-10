@@ -29,5 +29,15 @@ export const adminService = {
     } catch (error) {
       throw new Error(error.response?.data?.detail || 'Failed to deactivate user');
     }
+  },
+
+  async getCurrentUser() {
+  try {
+    const response = await api.get('/auth/me');
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.detail || 'Failed to fetch current user');
   }
+}
+
 };
