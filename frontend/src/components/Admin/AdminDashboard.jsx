@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './AdminDashboard.css';
+import { authService } from '../../services/auth'; // Add this import
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -87,16 +88,36 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    // Clear localStorage items
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('isAdmin');
-    
-    // Redirect to login page (you might want to use React Router for this)
-    console.log('Logging out...');
-    alert('Logout functionality - redirecting to login page');
-    // window.location.href = '/login'; // Uncomment when you have a login page
+  const handleLogout = async () => {
+    try {
+      console.log('Logging out...');
+      
+      // Use the authService logout method which calls the backend
+      const result = await authService.logout();
+      
+      if (result.success) {
+        console.log('Logout successful:', result.message);
+      } else {
+        console.log('Logout had issues but local session cleared:', result.error);
+      }
+      
+      // Force a page reload to redirect to login page
+      window.location.reload();
+      
+      // Alternative options if you prefer:
+      // window.location.href = '/login';
+      // Or if using React Router: navigate('/login');
+      
+    } catch (error) {
+      console.error('Logout failed:', error);
+      
+      // Fallback: clear localStorage directly and reload
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('isAdmin');
+      
+      window.location.reload();
+    }
   };
 
   // Helper function to get user initials
@@ -131,7 +152,7 @@ const AdminDashboard = () => {
       <header className="admin-header">
         <div className="logo-section">
           <div className="logo">A</div>
-          <div className="logo-text">AdminPro</div>
+          <div className="logo-text">Admin Dashboard</div>
         </div>
         
         <div className="admin-profile">

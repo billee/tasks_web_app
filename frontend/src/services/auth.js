@@ -67,8 +67,33 @@ export const authService = {
     }
   },
 
-  // Logout user
-  logout() {
+  // Logout user with backend call
+  async logout() {
+    try {
+      // Call backend logout endpoint
+      await api.post('/auth/logout');
+      
+      // Clear local storage regardless of backend response
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('isAdmin');
+      
+      return { success: true, message: 'Logged out successfully' };
+    } catch (error) {
+      // Even if backend call fails, clear local storage
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('isAdmin');
+      
+      return { 
+        success: false, 
+        error: error.response?.data?.detail || 'Logout failed, but local session cleared' 
+      };
+    }
+  },
+
+  // Quick logout (client-side only) - keeping for backwards compatibility
+  logoutQuick() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('isAdmin');

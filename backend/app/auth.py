@@ -48,6 +48,9 @@ class UserResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class LogoutResponse(BaseModel):
+    message: str
+
 # Router
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -156,6 +159,15 @@ async def admin_login(
     )
     
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.post("/logout", response_model=LogoutResponse)
+async def logout(current_user: User = Depends(get_current_user)):
+    """
+    Logout endpoint - since JWT tokens are stateless, this endpoint 
+    mainly serves to validate the token and provide a consistent API.
+    The actual logout logic (clearing tokens) happens on the client side.
+    """
+    return {"message": f"User {current_user.email} successfully logged out"}
 
 @router.get("/me", response_model=UserResponse)
 async def read_users_me(current_user: User = Depends(get_current_user)):
