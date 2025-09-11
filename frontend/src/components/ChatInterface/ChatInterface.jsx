@@ -57,7 +57,7 @@ const ChatInterface = () => {
     };
 
   return (
-    <div className="chat-container">
+    <div className="container">
         <header>
         <div className="logo">
             <i className="fas fa-robot"></i>
@@ -70,7 +70,7 @@ const ChatInterface = () => {
         </button>
         </header>
       
-      <div className="chat-content">
+      <div className="chat-container">
         <div className="sidebar">
           <div className="sidebar-title">Recent Chats</div>
           <div className="chat-history">

@@ -264,7 +264,7 @@ const AdminDashboard = () => {
         </div>
           
         <div className="user-creation-form">
-          <h2>Create New User - not implemented yet</h2>
+          <h2>Create New User</h2>
           <form onSubmit={handleCreateUser}>
                 <div className="form-group">
                   <label htmlFor="name">Full Name</label>
