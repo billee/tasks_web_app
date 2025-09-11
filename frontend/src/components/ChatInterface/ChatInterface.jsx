@@ -3,8 +3,7 @@ import './ChatInterface.css';
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState([
-    { text: "Hello! I'm your AI assistant. How can I help with your business tasks today?", isUser: false, time: "Just now" },
-    { text: "I can help you with email categorization, document analysis, data reporting, and task automation. What would you like to start with?", isUser: false, time: "Just now" }
+    { text: "Hello! I'm your AI assistant. How can I help with your business tasks today?", isUser: false, time: "Just now" }
   ]);
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef(null);
@@ -78,15 +77,6 @@ const ChatInterface = () => {
           <div className="chat-history">
             <div className="history-item active">Email Tasks</div>
             <div className="history-item">To Do List</div>
-            <div className="history-item">Data Reporting</div>
-            <div className="history-item">Task Automation</div>
-          </div>
-          
-          <div className="sidebar-title">Quick Actions</div>
-          <div className="features">
-            <div className="feature-button">Categorize Emails</div>
-            <div className="feature-button">Generate Report</div>
-            <div className="feature-button">Analyze Data</div>
           </div>
         </div>
         
