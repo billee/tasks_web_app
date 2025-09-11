@@ -1,3 +1,4 @@
+// AdminDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import './AdminDashboard.css';
 import { authService } from '../../services/auth';
@@ -174,34 +175,34 @@ const AdminDashboard = () => {
   const activeUsers = users.filter(user => user.is_active).length;
   const inactiveUsers = users.filter(user => !user.is_active).length;
 
-  if (isLoading) return <div className="loading">Loading...</div>;
+  if (isLoading) return <div className="admin-dashboard-loading">Loading...</div>;
 
   return (
-    <>
+    <div className="admin-dashboard">
       {/* Sticky Header */}
-      <header className="admin-header">
-        <div className="logo-section">
-          <div className="logo">A</div>
-          <div className="logo-text">Admin Dashboard</div>
+      <header className="admin-dashboard-header">
+        <div className="admin-dashboard-logo-section">
+          <div className="admin-dashboard-logo">A</div>
+          <div className="admin-dashboard-logo-text">Admin Dashboard</div>
         </div>
         
-        <div className="admin-profile">
-          <div className="profile-info">
-            <div className="admin-name">
+        <div className="admin-dashboard-profile">
+          <div className="admin-dashboard-profile-info">
+            <div className="admin-dashboard-name">
               {currentUser ? getDisplayName(currentUser) : 'Administrator'}
             </div>
-            <div className="admin-role">Administrator</div>
+            <div className="admin-dashboard-role">Administrator</div>
           </div>
-          <div className="profile-avatar">
+          <div className="admin-dashboard-profile-avatar">
             {currentUser ? getUserInitials(currentUser) : 'A'}
           </div>
-          <button className="logout-btn" onClick={handleLogout}>
+          <button className="admin-dashboard-logout-btn" onClick={handleLogout}>
             Log Out
           </button>
         </div>
       </header>
 
-      <div className="users-list">
+      <div className="admin-dashboard-users-list">
         <h2>Existing Users</h2>
         <table>
           <thead>
@@ -220,12 +221,12 @@ const AdminDashboard = () => {
                 <td>{user.name || 'N/A'}</td>
                 <td>{user.email}</td>
                 <td>
-                  <span className={`admin-badge ${user.is_admin ? 'admin-yes' : 'admin-no'}`}>
+                  <span className={`admin-dashboard-admin-badge ${user.is_admin ? 'admin-dashboard-admin-yes' : 'admin-dashboard-admin-no'}`}>
                     {user.is_admin ? 'Yes' : 'No'}
                   </span>
                 </td>
                 <td>
-                  <span className={`status-badge ${user.is_active ? 'status-active' : 'status-inactive'}`}>
+                  <span className={`admin-dashboard-status-badge ${user.is_active ? 'admin-dashboard-status-active' : 'admin-dashboard-status-inactive'}`}>
                     {user.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
@@ -234,7 +235,7 @@ const AdminDashboard = () => {
                   {user.is_active && (
                     <button 
                       onClick={() => handleDeactivate(user.id)}
-                      className="deactivate-btn"
+                      className="admin-dashboard-deactivate-btn"
                     >
                       Deactivate
                     </button>
@@ -247,26 +248,26 @@ const AdminDashboard = () => {
       </div>
 
       {/* Main Dashboard Content */}
-      <div className="admin-dashboard">      
-        <div className="dashboard-grid">
-        <div className="dashboard-stats">
+      <div className="admin-dashboard-content">      
+        <div className="admin-dashboard-grid">
+          <div className="admin-dashboard-stats">
           <h2>Quick Stats</h2>
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-number">{activeUsers}</div>
-              <div className="stat-label">Active Users</div>
+            <div className="admin-dashboard-stats-grid">
+              <div className="admin-dashboard-stat-card">
+                <div className="admin-dashboard-stat-number">{activeUsers}</div>
+                <div className="admin-dashboard-stat-label">Active Users</div>
             </div>
-            <div className="stat-card">
-              <div className="stat-number">{inactiveUsers}</div>
-              <div className="stat-label">Inactive Users</div>
+              <div className="admin-dashboard-stat-card">
+                <div className="admin-dashboard-stat-number">{inactiveUsers}</div>
+                <div className="admin-dashboard-stat-label">Inactive Users</div>
             </div>
           </div>
         </div>
           
-        <div className="user-creation-form">
+          <div className="admin-dashboard-user-creation-form">
           <h2>Create New User</h2>
           <form onSubmit={handleCreateUser}>
-                <div className="form-group">
+              <div className="admin-dashboard-form-group">
                   <label htmlFor="name">Full Name</label>
             <input
               type="text"
@@ -277,7 +278,7 @@ const AdminDashboard = () => {
               required
             />
                 </div>
-                <div className="form-group">
+              <div className="admin-dashboard-form-group">
                   <label htmlFor="email">Email Address</label>
             <input
               type="email"
@@ -288,7 +289,7 @@ const AdminDashboard = () => {
               required
             />
                 </div>
-                <div className="form-group">
+              <div className="admin-dashboard-form-group">
                   <label htmlFor="password">Password</label>
             <input
               type="password"
@@ -304,7 +305,7 @@ const AdminDashboard = () => {
         </div>
       </div>
       </div>
-    </>
+    </div>
   );
 };
 

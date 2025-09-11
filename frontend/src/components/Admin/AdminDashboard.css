@@ -1,24 +1,22 @@
-/* Global Styles */
-* {
+/* AdminDashboard.css */
+/* All styles are now scoped under .admin-dashboard */
+
+.admin-dashboard * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-body {
+.admin-dashboard {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f5f6fa;
   padding-top: 70px; /* Account for sticky header */
-}
-
-/* Ensure the root container spans full width */
-#root, .app {
   width: 100%;
   max-width: 100%;
 }
 
 /* Sticky Header */
-.admin-header {
+.admin-dashboard .admin-dashboard-header {
   position: fixed;
   top: 0;
   left: 0;
@@ -33,55 +31,55 @@ body {
   padding: 0 30px;
 }
 
-.logo-section {
+.admin-dashboard .admin-dashboard-logo-section {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.logo {
+.admin-dashboard .admin-dashboard-logo {
   width: 40px;
   height: 40px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   display: flex;
   align-items: center;
-  /* justify-content: center; */
+  justify-content: center;
   font-size: 20px;
   color: white;
   font-weight: bold;
 }
 
-.logo-text {
+.admin-dashboard .admin-dashboard-logo-text {
   color: white;
   font-size: 24px;
   font-weight: 600;
   letter-spacing: -0.5px;
 }
 
-.admin-profile {
+.admin-dashboard .admin-dashboard-profile {
   display: flex;
   align-items: center;
   gap: 15px;
 }
 
-.profile-info {
+.admin-dashboard .admin-dashboard-profile-info {
   text-align: right;
 }
 
-.admin-name {
+.admin-dashboard .admin-dashboard-name {
   color: white;
   font-size: 16px;
   font-weight: 500;
   margin-bottom: 2px;
 }
 
-.admin-role {
+.admin-dashboard .admin-dashboard-role {
   color: rgba(255, 255, 255, 0.8);
   font-size: 12px;
 }
 
-.profile-avatar {
+.admin-dashboard .admin-dashboard-profile-avatar {
   width: 45px;
   height: 45px;
   background: rgba(255, 255, 255, 0.2);
@@ -95,7 +93,7 @@ body {
   border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
-.logout-btn {
+.admin-dashboard .admin-dashboard-logout-btn {
   background: rgba(255, 255, 255, 0.2);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -107,19 +105,19 @@ body {
   transition: all 0.3s ease;
 }
 
-.logout-btn:hover {
+.admin-dashboard .admin-dashboard-logout-btn:hover {
   background: rgba(255, 255, 255, 0.3);
   border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* Main Dashboard Content */
-.admin-dashboard {
+.admin-dashboard .admin-dashboard-content {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
 }
 
-.admin-dashboard h1 {
+.admin-dashboard .admin-dashboard-content h1 {
   color: #2c3e50;
   margin-bottom: 40px;
   font-size: 32px;
@@ -128,7 +126,7 @@ body {
   position: relative;
 }
 
-.admin-dashboard h1::after {
+.admin-dashboard .admin-dashboard-content h1::after {
   content: '';
   position: absolute;
   bottom: -10px;
@@ -140,7 +138,7 @@ body {
   border-radius: 2px;
 }
 
-.dashboard-grid {
+.admin-dashboard .admin-dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 30px;
@@ -148,7 +146,7 @@ body {
 }
 
 /* User Creation Form */
-.user-creation-form {
+.admin-dashboard .admin-dashboard-user-creation-form {
   background: white;
   padding: 30px;
   border-radius: 12px;
@@ -157,7 +155,7 @@ body {
   height: fit-content;
 }
 
-.user-creation-form h2 {
+.admin-dashboard .admin-dashboard-user-creation-form h2 {
   margin-top: 0;
   margin-bottom: 25px;
   color: #2c3e50;
@@ -165,25 +163,25 @@ body {
   font-weight: 600;
 }
 
-.user-creation-form form {
+.admin-dashboard .admin-dashboard-user-creation-form form {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.form-group {
+.admin-dashboard .admin-dashboard-form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.form-group label {
+.admin-dashboard .admin-dashboard-form-group label {
   color: #555;
   font-weight: 500;
   font-size: 14px;
 }
 
-.user-creation-form input {
+.admin-dashboard .admin-dashboard-user-creation-form input {
   padding: 12px 16px;
   border: 2px solid #e8ecef;
   border-radius: 8px;
@@ -191,13 +189,13 @@ body {
   transition: border-color 0.3s ease;
 }
 
-.user-creation-form input:focus {
+.admin-dashboard .admin-dashboard-user-creation-form input:focus {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.user-creation-form button {
+.admin-dashboard .admin-dashboard-user-creation-form button {
   padding: 12px 24px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -209,13 +207,13 @@ body {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.user-creation-form button:hover {
+.admin-dashboard .admin-dashboard-user-creation-form button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
 }
 
 /* Dashboard Stats */
-.dashboard-stats {
+.admin-dashboard .admin-dashboard-stats {
   background: white;
   padding: 30px;
   border-radius: 12px;
@@ -224,7 +222,7 @@ body {
   height: fit-content;
 }
 
-.dashboard-stats h2 {
+.admin-dashboard .admin-dashboard-stats h2 {
   margin-top: 0;
   margin-bottom: 25px;
   color: #2c3e50;
@@ -232,13 +230,13 @@ body {
   font-weight: 600;
 }
 
-.stats-grid {
+.admin-dashboard .admin-dashboard-stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
 }
 
-.stat-card {
+.admin-dashboard .admin-dashboard-stat-card {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   padding: 20px;
   border-radius: 10px;
@@ -246,23 +244,23 @@ body {
   text-align: center;
 }
 
-.stat-card:nth-child(2) {
+.admin-dashboard .admin-dashboard-stat-card:nth-child(2) {
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
-.stat-number {
+.admin-dashboard .admin-dashboard-stat-number {
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 5px;
 }
 
-.stat-label {
+.admin-dashboard .admin-dashboard-stat-label {
   font-size: 14px;
   opacity: 0.9;
 }
 
 /* Users List - Modified to span lengthwise with margins */
-.users-list {
+.admin-dashboard .admin-dashboard-users-list {
   background: white;
   border-radius: 12px;
   overflow: hidden;
@@ -272,7 +270,7 @@ body {
   width: calc(100% - 40px);
 }
 
-.users-list h2 {
+.admin-dashboard .admin-dashboard-users-list h2 {
   padding: 25px 30px;
   margin: 0;
   background: #f8f9fa;
@@ -282,20 +280,20 @@ body {
   border-bottom: 1px solid #e8ecef;
 }
 
-.users-list table {
+.admin-dashboard .admin-dashboard-users-list table {
   width: 100%;
   border-collapse: collapse;
   table-layout: auto;
 }
 
-.users-list th,
-.users-list td {
+.admin-dashboard .admin-dashboard-users-list th,
+.admin-dashboard .admin-dashboard-users-list td {
   padding: 16px 30px;
   text-align: left;
   border-bottom: 1px solid #f0f0f0;
 }
 
-.users-list th {
+.admin-dashboard .admin-dashboard-users-list th {
   background: #f8f9fa;
   font-weight: 600;
   color: #555;
@@ -304,28 +302,28 @@ body {
   letter-spacing: 0.5px;
 }
 
-.users-list tr:hover {
+.admin-dashboard .admin-dashboard-users-list tr:hover {
   background: #f8f9fa;
 }
 
-.status-badge {
+.admin-dashboard .admin-dashboard-status-badge {
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
 }
 
-.status-active {
+.admin-dashboard .admin-dashboard-status-active {
   background: #d4edda;
   color: #155724;
 }
 
-.status-inactive {
+.admin-dashboard .admin-dashboard-status-inactive {
   background: #f8d7da;
   color: #721c24;
 }
 
-.deactivate-btn {
+.admin-dashboard .admin-dashboard-deactivate-btn {
   padding: 8px 16px;
   background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
   color: white;
@@ -337,13 +335,13 @@ body {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.deactivate-btn:hover {
+.admin-dashboard .admin-dashboard-deactivate-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
 }
 
 /* Loading State */
-.loading {
+.admin-dashboard .admin-dashboard-loading {
   text-align: center;
   padding: 60px;
   font-size: 18px;
@@ -353,7 +351,7 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
-.admin-badge {
+.admin-dashboard .admin-dashboard-admin-badge {
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 12px;
@@ -361,13 +359,13 @@ body {
   text-align: center;
 }
 
-.admin-yes {
+.admin-dashboard .admin-dashboard-admin-yes {
   background-color: rgb(214, 63, 63);
   color: #c6d4c6;
   border: 1px solid #f8d7da;
 }
 
-.admin-no {
+.admin-dashboard .admin-dashboard-admin-no {
   background-color: #f5f5f5;
   color: #666;
   border: 1px solid #ddd;
@@ -375,47 +373,47 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .admin-header {
+  .admin-dashboard .admin-dashboard-header {
     padding: 0 20px;
   }
   
-  .logo-text {
+  .admin-dashboard .admin-dashboard-logo-text {
     font-size: 20px;
   }
   
-  .profile-info {
+  .admin-dashboard .admin-dashboard-profile-info {
     display: none;
   }
   
-  .admin-dashboard {
+  .admin-dashboard .admin-dashboard-content {
     padding: 0 15px;
   }
   
-  .dashboard-grid {
+  .admin-dashboard .admin-dashboard-grid {
     grid-template-columns: 1fr;
     gap: 20px;
   }
   
-  .stats-grid {
+  .admin-dashboard .admin-dashboard-stats-grid {
     grid-template-columns: 1fr;
   }
   
-  .user-creation-form form {
+  .admin-dashboard .admin-dashboard-user-creation-form form {
     flex-direction: column;
   }
   
-  .user-creation-form input {
+  .admin-dashboard .admin-dashboard-user-creation-form input {
     width: 100%;
   }
   
-  .users-list {
+  .admin-dashboard .admin-dashboard-users-list {
     overflow-x: auto;
     margin: 25px 15px;
     width: calc(100% - 30px);
   }
   
-  .users-list th,
-  .users-list td {
+  .admin-dashboard .admin-dashboard-users-list th,
+  .admin-dashboard .admin-dashboard-users-list td {
     padding: 12px 15px;
     min-width: 120px;
   }

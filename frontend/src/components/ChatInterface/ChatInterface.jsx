@@ -1,3 +1,4 @@
+// ChatInterface.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import './ChatInterface.css';
 
@@ -56,34 +57,34 @@ const ChatInterface = () => {
     };
 
   return (
-    <>
+    <div className="chat-interface">
       {/* Sticky Header */}
-        <header>
-        <div className="logo">
+      <header className="chat-header">
+        <div className="chat-logo">
             <i className="fas fa-robot"></i>
             <span>AI Assistant</span>
         </div>
-        <div className="tagline">Your intelligent business productivity partner</div>
-        <button className="logout-button" onClick={handleLogout}>
+        <div className="chat-tagline">Your intelligent business productivity partner</div>
+        <button className="chat-logout-button" onClick={handleLogout}>
             <i className="fas fa-sign-out-alt"></i>
             Logout
         </button>
         </header>
       
       {/* Main Chat Content */}
-      <div className="container">
-      <div className="chat-container">
-        <div className="sidebar">
+      <div className="chat-main-container">
+        <div className="chat-ui-container">
+          <div className="chat-sidebar">
           <div className="chat-history">
             <div className="history-item active">Email Tasks</div>
             <div className="history-item">To Do List</div>
           </div>
         </div>
         
-        <div className="main-chat">
+          <div className="chat-main">
           <div className="response-section">
             {messages.map((message, index) => (
-              <div key={index} className={`message ${message.isUser ? 'user-message' : 'ai-message'}`}>
+                <div key={index} className={`chat-message ${message.isUser ? 'user-message' : 'ai-message'}`}>
                 <div className="message-bubble">
                   {message.text}
                 </div>
@@ -93,7 +94,7 @@ const ChatInterface = () => {
             <div ref={messagesEndRef} />
           </div>
           
-          <div className="chat-input">
+            <div className="chat-input-container">
             <input 
               type="text" 
               className="message-input" 
@@ -109,7 +110,7 @@ const ChatInterface = () => {
         </div>
       </div>
     </div>
-    </>
+    </div>
   );
 };
 
