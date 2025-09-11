@@ -44,6 +44,7 @@ async def create_user(
     hashed_password = get_password_hash(user_data.password)
     db_user = User(
         email=user_data.email,
+        name=getattr(user_data, 'name', None),
         hashed_password=hashed_password,
         is_active=True,
         is_admin=False,
@@ -55,3 +56,31 @@ async def create_user(
     db.refresh(db_user)
     
     return db_user
+
+@router.put("/users/{user_id}/deactivate", response_model=UserResponse)
+async def deactivate_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    # Find the user to deactivate
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Prevent admin from deactivating themselves
+    if user.id == admin.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot deactivate your own account"
+        )
+    
+    # Deactivate the user
+    user.is_active = False
+    db.commit()
+    db.refresh(user)
+    
+    return user

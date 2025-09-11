@@ -7,9 +7,11 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+    name: Optional[str] = None  # Add name field to UserCreate as well
 
 class UserResponse(UserBase):
     id: int
+    name: Optional[str] = None  # Add this line - this was missing!
     is_active: bool
     is_admin: bool
     created_at: datetime

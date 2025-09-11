@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './AdminDashboard.css';
-import { authService } from '../../services/auth'; // Add this import
+import { authService } from '../../services/auth';
+import { adminService } from '../../services/admin';
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -12,27 +13,27 @@ const AdminDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate fetching users from an API
+    // Fetch users from the API
     const fetchUsers = async () => {
       try {
-        // This would be replaced with an actual API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Fetch real users from the backend
+        const usersData = await adminService.getUsers();
+        setUsers(usersData);
           
-        // Mock data for demonstration
-          const mockUsers = [
-          { id: 1, email: 'user1@example.com', is_active: true, created_at: new Date().toISOString() },
-          { id: 2, email: 'user2@example.com', is_active: true, created_at: new Date().toISOString() }
-        ];
+        // Get current user info from the API
+        try {
+          const currentUserData = await adminService.getCurrentUser();
+          setCurrentUser(currentUserData);
+        } catch (currentUserError) {
+          console.error('Failed to fetch current user, using localStorage fallback:', currentUserError);
         
-          setUsers(mockUsers);
-        
-        // Get current user info from localStorage
+          // Fallback to localStorage if API call fails
         const userEmail = localStorage.getItem('userEmail');
-        const userName = localStorage.getItem('userName') || 'Administrator'; // Get stored name or default
+          const userName = localStorage.getItem('userName') || 'Administrator';
         
         if (userEmail) {
           // Try to find the user in the users list, or create a mock current user
-          const currentUserData = mockUsers.find(user => user.email === userEmail) || 
+            const currentUserData = usersData.find(user => user.email === userEmail) || 
                                   { 
                                     email: userEmail, 
                                     name: userName,
@@ -43,7 +44,7 @@ const AdminDashboard = () => {
                                   };
           setCurrentUser(currentUserData);
         } else {
-          // Fallback for demonstration
+            // Final fallback for demonstration
           setCurrentUser({ 
             email: 'admin@example.com', 
             name: userName,
@@ -53,8 +54,10 @@ const AdminDashboard = () => {
             created_at: new Date().toISOString() 
           });
         }
+        }
       } catch (error) {
         console.error('Failed to fetch users:', error);
+        alert('Failed to load users: ' + error.message);
       } finally {
         setIsLoading(false);
       }
@@ -66,41 +69,34 @@ const AdminDashboard = () => {
   const handleCreateUser = async (e) => {
     e.preventDefault();
     try {
-      // This would call your backend API to create a user
-      console.log('Creating user:', newUser);
+      // Call the backend API to create a user
+      const createdUser = await adminService.createUser(newUser);
       
-      // For now, just add to the local state
-      const newUserObj = {
-        id: users.length + 1,
-        email: newUser.email,
-        is_active: true,
-        created_at: new Date().toISOString()
-      };
-      
-      setUsers([...users, newUserObj]);
+      // Add the new user to the local state
+      setUsers([...users, createdUser]);
       setNewUser({ email: '', password: '' });
       
       alert('User created successfully!');
     } catch (error) {
       console.error('Failed to create user:', error);
-      alert('Failed to create user');
+      alert('Failed to create user: ' + error.message);
     }
   };
 
   const handleDeactivate = async (userId) => {
     try {
-      // This would call your backend API to deactivate a user
-      console.log('Deactivating user:', userId);
+      // Call the backend API to deactivate a user
+      const updatedUser = await adminService.deactivateUser(userId);
       
-      // For now, just update the local state
+      // Update the user in the local state
       setUsers(users.map(user => 
-        user.id === userId ? { ...user, is_active: false } : user
+        user.id === userId ? updatedUser : user
       ));
       
       alert('User deactivated successfully!');
     } catch (error) {
       console.error('Failed to deactivate user:', error);
-      alert('Failed to deactivate user');
+      alert('Failed to deactivate user: ' + error.message);
     }
   };
 
@@ -210,7 +206,9 @@ const AdminDashboard = () => {
         <table>
           <thead>
             <tr>
+              <th>Name</th>
               <th>Email</th>
+              <th>Admin</th>
               <th>Status</th>
               <th>Created</th>
               <th>Actions</th>
@@ -219,12 +217,18 @@ const AdminDashboard = () => {
           <tbody>
             {users.map(user => (
               <tr key={user.id}>
+                <td>{user.name || 'N/A'}</td>
                 <td>{user.email}</td>
-                  <td>
-                    <span className={`status-badge ${user.is_active ? 'status-active' : 'status-inactive'}`}>
-                      {user.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
+                <td>
+                  <span className={`admin-badge ${user.is_admin ? 'admin-yes' : 'admin-no'}`}>
+                    {user.is_admin ? 'Yes' : 'No'}
+                  </span>
+                </td>
+                <td>
+                  <span className={`status-badge ${user.is_active ? 'status-active' : 'status-inactive'}`}>
+                    {user.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </td>
                 <td>{new Date(user.created_at).toLocaleDateString()}</td>
                 <td>
                   {user.is_active && (
@@ -232,8 +236,8 @@ const AdminDashboard = () => {
                       onClick={() => handleDeactivate(user.id)}
                       className="deactivate-btn"
                     >
-                    Deactivate
-                  </button>
+                      Deactivate
+                    </button>
                   )}
                 </td>
               </tr>
@@ -260,8 +264,19 @@ const AdminDashboard = () => {
         </div>
           
         <div className="user-creation-form">
-          <h2>Create New User</h2>
+          <h2>Create New User - not implemented yet</h2>
           <form onSubmit={handleCreateUser}>
+                <div className="form-group">
+                  <label htmlFor="name">Full Name</label>
+            <input
+              type="text"
+                    id="name"
+                    placeholder="Enter full name"
+              value={newUser.name}
+              onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+              required
+            />
+                </div>
                 <div className="form-group">
                   <label htmlFor="email">Email Address</label>
             <input
