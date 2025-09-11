@@ -57,7 +57,8 @@ const ChatInterface = () => {
     };
 
   return (
-    <div className="container">
+    <>
+      {/* Sticky Header */}
         <header>
         <div className="logo">
             <i className="fas fa-robot"></i>
@@ -70,12 +71,13 @@ const ChatInterface = () => {
         </button>
         </header>
       
+      {/* Main Chat Content */}
+      <div className="container">
       <div className="chat-container">
         <div className="sidebar">
-          <div className="sidebar-title">Recent Chats</div>
           <div className="chat-history">
-            <div className="history-item active">Email Categorization</div>
-            <div className="history-item">Document Analysis</div>
+            <div className="history-item active">Email Tasks</div>
+            <div className="history-item">To Do List</div>
             <div className="history-item">Data Reporting</div>
             <div className="history-item">Task Automation</div>
           </div>
@@ -117,6 +119,7 @@ const ChatInterface = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

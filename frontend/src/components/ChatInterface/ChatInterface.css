@@ -9,25 +9,13 @@
             background: linear-gradient(135deg, #6e8efb, #a777e3);
             color: #333;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1000px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            height: 85vh;
-        }
-        
+}
+
+/* Sticky Header */
         header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
             background: linear-gradient(90deg, #6e8efb, #a777e3);
             color: white;
             padding: 20px;
@@ -60,10 +48,40 @@
             opacity: 0.9;
             margin-top: 5px;
         }
+
+.logout-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s;
+}
+
+.logout-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Main Container */
+.container {
+    min-height: calc(100vh - 120px); /* Subtract header height */
+    max-width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    flex-direction: column;
+}
         
         .chat-container {
             display: flex;
             flex: 1;
+            height: calc(100vh - 120px); /* Subtract header height */
             overflow: hidden;
         }
         
@@ -74,6 +92,7 @@
             border-right: 1px solid #eaeaea;
             display: flex;
             flex-direction: column;
+            height: 100%;
         }
         
         .sidebar-title {
@@ -109,6 +128,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            height: 100%;
             overflow: hidden;
         }
         
@@ -225,27 +245,6 @@
             background: #f0f3ff;
             border-color: #6e8efb;
         }
- 
-        .logout-button {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s;
-        }
-
-        .logout-button:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -261,12 +260,11 @@
                 max-width: 90%;
             }
             
-            body {
-                padding: 10px;
+            .container {
+                min-height: calc(100vh - 100px);
             }
             
-            .container {
-                height: 95vh;
-                border-radius: 15px;
+            .chat-container {
+                height: calc(100vh - 100px);
             }
         }
