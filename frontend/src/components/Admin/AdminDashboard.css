@@ -11,6 +11,12 @@ body {
   padding-top: 70px; /* Account for sticky header */
 }
 
+/* Ensure the root container spans full width */
+#root, .app {
+  width: 100%;
+  max-width: 100%;
+}
+
 /* Sticky Header */
 .admin-header {
   position: fixed;
@@ -110,6 +116,7 @@ body {
 .admin-dashboard {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 20px;
 }
 
 .admin-dashboard h1 {
@@ -137,7 +144,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 30px;
-  margin-bottom: 30px;
+  margin: 30px 0;
 }
 
 /* User Creation Form */
@@ -147,6 +154,7 @@ body {
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid #e8ecef;
+  height: fit-content;
 }
 
 .user-creation-form h2 {
@@ -210,10 +218,10 @@ body {
 .dashboard-stats {
   background: white;
   padding: 30px;
-  margin-top:25px;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid #e8ecef;
+  height: fit-content;
 }
 
 .dashboard-stats h2 {
@@ -253,14 +261,15 @@ body {
   opacity: 0.9;
 }
 
-/* Users List */
+/* Users List - Modified to span lengthwise with margins */
 .users-list {
   background: white;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid #e8ecef;
-  margin-top: 25px;
+  margin: 25px 20px;
+  width: calc(100% - 40px);
 }
 
 .users-list h2 {
@@ -276,6 +285,7 @@ body {
 .users-list table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: auto;
 }
 
 .users-list th,
@@ -337,7 +347,7 @@ body {
   text-align: center;
   padding: 60px;
   font-size: 18px;
-  color: #666;
+  color: 666;
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -358,11 +368,12 @@ body {
   }
   
   .admin-dashboard {
-    padding: 20px;
+    padding: 0 15px;
   }
   
   .dashboard-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
   
   .stats-grid {
@@ -379,6 +390,8 @@ body {
   
   .users-list {
     overflow-x: auto;
+    margin: 25px 15px;
+    width: calc(100% - 30px);
   }
   
   .users-list th,

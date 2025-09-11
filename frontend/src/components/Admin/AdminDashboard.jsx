@@ -244,7 +244,7 @@ const AdminDashboard = () => {
 
       {/* Main Dashboard Content */}
       <div className="admin-dashboard">      
-        <div className="dashboard-grid"></div>
+        <div className="dashboard-grid">
         <div className="dashboard-stats">
           <h2>Quick Stats</h2>
           <div className="stats-grid">
@@ -258,7 +258,7 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
-        <div className="dashboard-grid"></div>
+          
         <div className="user-creation-form">
           <h2>Create New User</h2>
           <form onSubmit={handleCreateUser}>
@@ -287,6 +287,7 @@ const AdminDashboard = () => {
             <button type="submit">Create User</button>
           </form>
         </div>
+      </div>
       </div>
     </>
   );
