@@ -25,9 +25,10 @@ load_dotenv(dotenv_path=str(env_path))
 app = FastAPI(title="Email Categorizer API", version="1.0.0")
 
 # Configure CORS
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React app's URL
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
