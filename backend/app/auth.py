@@ -14,8 +14,13 @@ from app.models import User
 # Configuration
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv()
+# Load environment variables from root directory
+# Get the root directory (two levels up from this file)
+root_dir = Path(__file__).parent.parent.parent
+env_path = root_dir / ".env"
+load_dotenv(dotenv_path=str(env_path))
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:

@@ -12,8 +12,14 @@ from app.admin import router as admin_router
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from root directory
+import os
+from pathlib import Path
+
+# Get the root directory (two levels up from this file)
+root_dir = Path(__file__).parent.parent.parent
+env_path = root_dir / ".env"
+load_dotenv(dotenv_path=str(env_path))
 
 # Create FastAPI app
 app = FastAPI(title="Email Categorizer API", version="1.0.0")
