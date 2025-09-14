@@ -4,8 +4,17 @@ from sqlalchemy.orm import sessionmaker
 import os
 
 # PostgreSQL database for both development and production
-# Updated with the correct password
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:paswd188!!@localhost:5432/tasks_web_app")
+# Auto-detect environment and use appropriate database URL
+def get_database_url():
+    # Check if running on Render (Render sets RENDER environment variable)
+    if os.getenv("RENDER"):
+        # Production environment - use DATABASE_PROD_URL
+        return os.getenv("DATABASE_PROD_URL")
+    else:
+        # Local development - use DATABASE_URL or local default
+        return os.getenv("DATABASE_URL", "postgresql://postgres:paswd188!!@localhost:5432/tasks_web_app")
+
+SQLALCHEMY_DATABASE_URL = get_database_url()
 
 # Handle Render.com's DATABASE_URL format (includes sslmode)
 if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
