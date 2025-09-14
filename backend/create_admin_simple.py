@@ -12,11 +12,11 @@ warnings.filterwarnings("ignore", message=".*trapped.*")
 # Add the current directory to the path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Database URL - make sure this matches your actual database URL
-SQLALCHEMY_DATABASE_URL = "sqlite:///./email_categorizer.db"
+# Database URL - PostgreSQL connection
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:paswd188!!@localhost:5432/tasks_web_app"
 
-# Create engine
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+# Create engine (removed SQLite-specific connect_args)
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 # Create session
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -25,12 +25,13 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def create_users_table_if_not_exists(db):
-    """Create the users table if it doesn't exist and ensure it has all required columns"""
+    """Create the users table if it doesn't exist with all required columns"""
     try:
-        # First, create the table if it doesn't exist
+        # Create the table with all columns including name (PostgreSQL syntax)
         db.execute(text("""
             CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id SERIAL PRIMARY KEY,
+                name TEXT,
                 email TEXT UNIQUE NOT NULL,
                 hashed_password TEXT NOT NULL,
                 is_active BOOLEAN DEFAULT TRUE,
@@ -40,14 +41,6 @@ def create_users_table_if_not_exists(db):
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """))
-        
-        # Check if 'name' column exists, if not add it
-        result = db.execute(text("PRAGMA table_info(users)"))
-        columns = [row[1] for row in result.fetchall()]
-        
-        if 'name' not in columns:
-            print("Adding missing 'name' column to users table...")
-            db.execute(text("ALTER TABLE users ADD COLUMN name TEXT"))
         
         db.commit()
         print("Users table created/verified successfully!")
@@ -75,8 +68,8 @@ def create_admin_user(name, email, password):
         
         db.execute(
             text(
-                "INSERT INTO users (name, email, hashed_password, is_active, is_admin, created_by) "
-                "VALUES (:name, :email, :hashed_password, :is_active, :is_admin, :created_by)"
+                "INSERT INTO users (name, email, hashed_password, is_active, is_admin, created_by, created_at) "
+                "VALUES (:name, :email, :hashed_password, :is_active, :is_admin, :created_by, CURRENT_TIMESTAMP)"
             ),
             {
                 "name": name,

@@ -1,6 +1,9 @@
+# Backend files
 backend/email_categorizer.db
 backend/app/__pycache__/
 backend/venv/
+
+# Frontend files
 frontend/node_modules/
 
 # Python
@@ -18,11 +21,17 @@ node_modules/
 # Environment files
 .env
 *.env
+.env.local
+.env.production
 
-# Database files
+# Database files (SQLite - no longer used but kept for safety)
 *.db
 *.sqlite
 *.sqlite3
+
+# PostgreSQL dumps
+*.sql
+*.dump
 
 # Build directories
 build/
@@ -44,3 +53,7 @@ Thumbs.db
 *.swp
 *.swo
 *~
+
+# Deployment files (old Railway config)
+deploy-railway.bat
+railway.toml
