@@ -1,7 +1,8 @@
 // ChatInterface.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import './ChatInterface.css';
-import { getLLMResponse } from '../../services/llm'; // Import the service
+import { getLLMResponse } from '../../services/llm';
+import { emailToolsChat } from '../../services/emailTools'; // Import the email tools service
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState([
@@ -9,6 +10,7 @@ const ChatInterface = () => {
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [activeMenu, setActiveMenu] = useState('Email Tasks'); // Track active menu
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -29,14 +31,52 @@ const ChatInterface = () => {
       setIsLoading(true);
       
       try {
-        // Call the actual LLM service
+        let response;
+        
+        // Use email tools if Email Tasks is selected
+        if (activeMenu === 'Email Tasks') {
+          response = await emailToolsChat(updatedMessages);
+        } else {
+          // Use regular LLM for other menus
         const aiResponseText = await getLLMResponse(updatedMessages);
-        const aiResponse = { 
-          text: aiResponseText, 
+          response = {
+            success: true,
+            message: aiResponseText,
+            tool_results: [],
+            has_tool_calls: false
+          };
+        }
+        
+        if (response.success) {
+          // Add AI response to chat
+          const aiMessage = { 
+            text: response.message, 
           isUser: false, 
           time: "Just now" 
         };
-        setMessages(prevMessages => [...prevMessages, aiResponse]);
+          setMessages(prevMessages => [...prevMessages, aiMessage]);
+          
+          // Add tool results if any
+          if (response.tool_results && response.tool_results.length > 0) {
+            response.tool_results.forEach(toolResult => {
+              const toolMessage = {
+                text: `Tool Result: ${JSON.stringify(toolResult.result, null, 2)}`,
+                isUser: false,
+                time: "Just now",
+                isToolResult: true
+              };
+              setMessages(prevMessages => [...prevMessages, toolMessage]);
+            });
+          }
+        } else {
+          // Handle API errors gracefully
+          const errorResponse = { 
+            text: "Sorry, I'm having trouble with email tools right now. Please try again.", 
+            isUser: false, 
+            time: "Just now" 
+          };
+          setMessages(prevMessages => [...prevMessages, errorResponse]);
+        }
       } catch (error) {
         // Handle API errors gracefully
         console.error('Error getting AI response:', error);
@@ -86,8 +126,18 @@ const ChatInterface = () => {
         <div className="chat-ui-container">
           <div className="chat-sidebar">
             <div className="chat-history">
-              <div className="history-item active">Email Tasks</div>
-              <div className="history-item">To Do List</div>
+              <div 
+                className={`history-item ${activeMenu === 'Email Tasks' ? 'active' : ''}`}
+                onClick={() => setActiveMenu('Email Tasks')}
+              >
+                Email Tasks
+              </div>
+              <div 
+                className={`history-item ${activeMenu === 'To Do List' ? 'active' : ''}`}
+                onClick={() => setActiveMenu('To Do List')}
+              >
+                To Do List
+              </div>
             </div>
           </div>
         

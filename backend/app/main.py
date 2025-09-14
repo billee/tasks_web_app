@@ -8,6 +8,7 @@ from app.auth import router as auth_router
 from app import models
 from app.database import engine  # Use the engine from database.py
 from app.admin import router as admin_router
+from app.email_tools import router as email_tools_router  # ADD THIS LINE
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -36,6 +37,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth_router)
 app.include_router(admin_router)
+app.include_router(email_tools_router)  # ADD THIS LINE
 
 # Basic health check endpoint
 @app.get("/")
@@ -45,12 +47,3 @@ async def root():
 @app.get("/api/health")
 async def health_check():
     return {"status": "healthy", "message": "Server is running successfully"}
-
-# Remove this duplicate startup event and duplicate root endpoint
-# @app.on_event("startup")  # REMOVED - tables are already created above
-# def create_tables():
-#     Base.metadata.create_all(bind=engine)
-
-# @app.get("/")  # REMOVED - duplicate endpoint
-# def read_root():
-#     return {"message": "FastAPI backend is running!"}
