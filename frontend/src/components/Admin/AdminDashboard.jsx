@@ -3,15 +3,18 @@ import React, { useState, useEffect } from 'react';
 import './AdminDashboard.css';
 import { authService } from '../../services/auth';
 import { adminService } from '../../services/admin';
+import EmailHistory from './EmailHistory'; // Import the EmailHistory component
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [newUser, setNewUser] = useState({
     email: '',
-    password: ''
+    password: '',
+    name: ''
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('users'); // Default to users tab
 
   useEffect(() => {
     // Fetch users from the API
@@ -75,7 +78,7 @@ const AdminDashboard = () => {
       
       // Add the new user to the local state
       setUsers([...users, createdUser]);
-      setNewUser({ email: '', password: '' });
+      setNewUser({ email: '', password: '', name: '' });
       
       alert('User created successfully!');
     } catch (error) {
@@ -116,10 +119,6 @@ const AdminDashboard = () => {
       
       // Force a page reload to redirect to login page
       window.location.reload();
-      
-      // Alternative options if you prefer:
-      // window.location.href = '/login';
-      // Or if using React Router: navigate('/login');
       
     } catch (error) {
       console.error('Logout failed:', error);
@@ -175,33 +174,14 @@ const AdminDashboard = () => {
   const activeUsers = users.filter(user => user.is_active).length;
   const inactiveUsers = users.filter(user => !user.is_active).length;
 
-  if (isLoading) return <div className="admin-dashboard-loading">Loading...</div>;
-
+  // Render content based on active tab
+  const renderTabContent = () => {
+    switch(activeTab) {
+      case 'emailHistory':
+        return <EmailHistory />;
+      case 'users':
   return (
-    <div className="admin-dashboard">
-      {/* Sticky Header */}
-      <header className="admin-dashboard-header">
-        <div className="admin-dashboard-logo-section">
-          <div className="admin-dashboard-logo">A</div>
-          <div className="admin-dashboard-logo-text">Admin Dashboard</div>
-        </div>
-        
-        <div className="admin-dashboard-profile">
-          <div className="admin-dashboard-profile-info">
-            <div className="admin-dashboard-name">
-              {currentUser ? getDisplayName(currentUser) : 'Administrator'}
-            </div>
-            <div className="admin-dashboard-role">Administrator</div>
-          </div>
-          <div className="admin-dashboard-profile-avatar">
-            {currentUser ? getUserInitials(currentUser) : 'A'}
-          </div>
-          <button className="admin-dashboard-logout-btn" onClick={handleLogout}>
-            Log Out
-          </button>
-        </div>
-      </header>
-
+          <>
       <div className="admin-dashboard-users-list">
         <h2>Existing Users</h2>
         <table>
@@ -247,23 +227,6 @@ const AdminDashboard = () => {
         </table>
       </div>
 
-      {/* Main Dashboard Content */}
-      <div className="admin-dashboard-content">      
-        <div className="admin-dashboard-grid">
-          <div className="admin-dashboard-stats">
-          <h2>Quick Stats</h2>
-            <div className="admin-dashboard-stats-grid">
-              <div className="admin-dashboard-stat-card">
-                <div className="admin-dashboard-stat-number">{activeUsers}</div>
-                <div className="admin-dashboard-stat-label">Active Users</div>
-            </div>
-              <div className="admin-dashboard-stat-card">
-                <div className="admin-dashboard-stat-number">{inactiveUsers}</div>
-                <div className="admin-dashboard-stat-label">Inactive Users</div>
-            </div>
-          </div>
-        </div>
-          
           <div className="admin-dashboard-user-creation-form">
           <h2>Create New User</h2>
           <form onSubmit={handleCreateUser}>
@@ -303,7 +266,88 @@ const AdminDashboard = () => {
             <button type="submit">Create User</button>
           </form>
         </div>
+          </>
+        );
+      case 'stats':
+        return (
+          <div className="admin-dashboard-stats">
+            <h2>Quick Stats</h2>
+            <div className="admin-dashboard-stats-grid">
+              <div className="admin-dashboard-stat-card">
+                <div className="admin-dashboard-stat-number">{users.length}</div>
+                <div className="admin-dashboard-stat-label">Total Users</div>
+              </div>
+              <div className="admin-dashboard-stat-card">
+                <div className="admin-dashboard-stat-number">{activeUsers}</div>
+                <div className="admin-dashboard-stat-label">Active Users</div>
+              </div>
+              <div className="admin-dashboard-stat-card">
+                <div className="admin-dashboard-stat-number">{inactiveUsers}</div>
+                <div className="admin-dashboard-stat-label">Inactive Users</div>
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        return <div>Select a tab</div>;
+    }
+  };
+
+  if (isLoading) return <div className="admin-dashboard-loading">Loading...</div>;
+
+  return (
+    <div className="admin-dashboard">
+      {/* Sticky Header */}
+      <header className="admin-dashboard-header">
+        <div className="admin-dashboard-logo-section">
+          <div className="admin-dashboard-logo">A</div>
+          <div className="admin-dashboard-logo-text">Admin Dashboard</div>
+        </div>
+        
+        <div className="admin-dashboard-profile">
+          <div className="admin-dashboard-profile-info">
+            <div className="admin-dashboard-name">
+              {currentUser ? getDisplayName(currentUser) : 'Administrator'}
+            </div>
+            <div className="admin-dashboard-role">Administrator</div>
+          </div>
+          <div className="admin-dashboard-profile-avatar">
+            {currentUser ? getUserInitials(currentUser) : 'A'}
+          </div>
+          <button className="admin-dashboard-logout-btn" onClick={handleLogout}>
+            Log Out
+          </button>
+        </div>
+      </header>
+
+      {/* Horizontal Menu */}
+      <div className="admin-dashboard-menu">
+        <button 
+          className={`admin-dashboard-menu-item ${activeTab === 'emailHistory' ? 'active' : ''}`}
+          onClick={() => setActiveTab('emailHistory')}
+        >
+          <i className="fas fa-envelope"></i>
+          Email Histories
+        </button>
+        <button 
+          className={`admin-dashboard-menu-item ${activeTab === 'users' ? 'active' : ''}`}
+          onClick={() => setActiveTab('users')}
+        >
+          <i className="fas fa-users"></i>
+          Users
+        </button>
+        <button 
+          className={`admin-dashboard-menu-item ${activeTab === 'stats' ? 'active' : ''}`}
+          onClick={() => setActiveTab('stats')}
+        >
+          <i className="fas fa-chart-bar"></i>
+          Quick Stats
+        </button>
       </div>
+
+      {/* Main Dashboard Content */}
+      <div className="admin-dashboard-content">
+        {renderTabContent()}
       </div>
     </div>
   );

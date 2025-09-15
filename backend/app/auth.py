@@ -243,3 +243,14 @@ async def admin_create_user(
     db.refresh(db_user)
     
     return db_user
+
+def require_admin(current_user: User = Depends(get_current_user)):
+    """
+    Dependency to require admin privileges.
+    """
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    return current_user 

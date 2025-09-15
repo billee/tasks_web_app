@@ -32,7 +32,13 @@ const ChatInterface = () => {
       
       try {
         let response;
+        const MAX_RETRIES = 2;
+        let retries = 0;
+        let lastError = null;
         
+        // Retry logic for timeout errors
+        while (retries <= MAX_RETRIES) {
+          try {
         // Use email tools if Email Tasks is selected
         if (activeMenu === 'Email Tasks') {
           response = await emailToolsChat(updatedMessages);
@@ -46,8 +52,31 @@ const ChatInterface = () => {
             has_tool_calls: false
           };
         }
+            break; // Break out of retry loop on success
+          } catch (error) {
+            lastError = error;
+            if (error.code === 'ECONNABORTED' && retries < MAX_RETRIES) {
+              // It's a timeout error and we have retries left
+              retries++;
+              // Show user that we're retrying
+              const retryMessage = { 
+                text: `Request taking longer than expected. Retrying (${retries}/${MAX_RETRIES})...`, 
+                isUser: false, 
+                time: "Just now",
+                isStatus: true
+              };
+              setMessages(prevMessages => [...prevMessages, retryMessage]);
+              // Wait before retrying (exponential backoff)
+              await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+              // Remove the status message
+              setMessages(prevMessages => prevMessages.filter(msg => !msg.isStatus));
+            } else {
+              throw error; // Re-throw if not timeout or no retries left
+            }
+          }
+        }
         
-        if (response.success) {
+        if (response && response.success) {
           // Add AI response to chat
           const aiMessage = { 
             text: response.message, 
@@ -80,6 +109,15 @@ const ChatInterface = () => {
       } catch (error) {
         // Handle API errors gracefully
         console.error('Error getting AI response:', error);
+        
+        let errorMessage = "Sorry, I'm having trouble responding right now. Please try again.";
+        
+        if (error.code === 'ECONNABORTED') {
+          errorMessage = "The request is taking too long. Please check your connection and try again.";
+        } else if (error.response && error.response.status >= 500) {
+          errorMessage = "The server is experiencing issues. Please try again later.";
+        }
+        
         const errorResponse = { 
           text: "Sorry, I'm having trouble responding right now. Please try again.", 
           isUser: false, 

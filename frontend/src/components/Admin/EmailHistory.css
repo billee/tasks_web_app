@@ -1,0 +1,86 @@
+.admin-email-history {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.admin-email-history h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 24px;
+}
+
+.email-table {
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+.email-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.email-table th,
+.email-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.email-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #555;
+}
+
+.email-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.preview-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+}
+
+.loading {
+  color: #6e8efb;
+}
+
+.error {
+  color: #dc3545;
+}
+
+.status-sent {
+  color: #28a745;
+}
+
+.status-failed {
+  color: #dc3545;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .email-table {
+    font-size: 12px;
+  }
+  
+  .email-table th,
+  .email-table td {
+    padding: 8px;
+  }
+  
+  .admin-email-history {
+    padding: 15px;
+  }
+}

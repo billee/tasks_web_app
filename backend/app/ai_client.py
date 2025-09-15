@@ -192,53 +192,87 @@ class AIClient:
         if not self.enabled:
             return {
                 "success": False,
-                "message": "AI service is not configured. Please set OPENAI_API_KEY environment variable.",
-                "tool_results": [],
-                "has_tool_calls": False
+                "message": "AI service is not configured. Please set OPENAI_API_KEY environment variable."
             }
-            
+        
         try:
             # Select tools based on tool_type
-            tools = self.email_tools if tool_type == "email" else []
+            tools = []
+            if tool_type == "email":
+                tools = self.email_tools
             
-            print(f"Using tools: {tools}")
-            
-            # Make the API call
-            if tools:
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    messages=messages,
-                    tools=tools,
-                    tool_choice="auto",
-                    max_tokens=1000,
-                    temperature=0.7
-                )
-            else:
-                # No tools, regular chat
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    messages=messages,
-                    max_tokens=1000,
-                    temperature=0.7
-                )
-            
-            print(f"OpenAI API response: {response}")
+            # Make the initial API call
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are a helpful business assistant. Use the available tools when appropriate to help users with their tasks."}
+                ] + messages,
+                tools=tools if tools else None,
+                tool_choice="auto" if tools else None,
+                max_tokens=1000,
+                temperature=0.7
+            )
             
             message = response.choices[0].message
             tool_results = []
             
-            # Process tool calls if any
-            if hasattr(message, 'tool_calls') and message.tool_calls:
-                print(f"Tool calls detected: {message.tool_calls}")
+            # Check if the AI wants to use tools
+            if message.tool_calls:
+                # Process each tool call
                 for tool_call in message.tool_calls:
                     tool_result = self.process_tool_call(tool_call)
                     tool_results.append({
+                        "tool_call_id": tool_call.id,
                         "tool_name": tool_call.function.name,
                         "result": tool_result
                     })
+                
+                # Create tool messages for the conversation
+                tool_messages = []
+                for i, tool_call in enumerate(message.tool_calls):
+                    tool_messages.append({
+                        "role": "tool",
+                        "content": json.dumps(tool_results[i]["result"]),
+                        "tool_call_id": tool_call.id
+                    })
+                
+                # Get final response from AI after tool execution
+                final_response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": "You are a helpful business assistant. Provide a friendly summary of the completed actions."}
+                    ] + messages + [
+                        {"role": "assistant", "content": message.content, "tool_calls": message.tool_calls}
+                    ] + tool_messages,
+                    max_tokens=1000,
+                    temperature=0.7
+                )
+                
+                message_content = final_response.choices[0].message.content
+            else:
+                # No tool calls, just return the regular response
+                message_content = message.content
             
-            # If message content is None (when tool calls are used), provide a default message
-            message_content = message.content if message.content else "I've processed your request using the email tools."
+            # If we have tool results, format a friendly response
+            if tool_results:
+                friendly_responses = []
+                for tool_result in tool_results:
+                    if tool_result["tool_name"] == "send_email":
+                        result = tool_result["result"]
+                        if result["success"]:
+                            friendly_responses.append(
+                                f"✅ I've sent an email to {result['details']['recipient']} "
+                                f"with subject '{result['details']['subject']}'. "
+                                f"The email has been successfully delivered!"
+                            )
+                        else:
+                            friendly_responses.append(
+                                f"❌ Sorry, I couldn't send the email. Error: {result['message']}"
+                            )
+                
+                # Use the friendly response instead of the technical one
+                if friendly_responses:
+                    message_content = "\n".join(friendly_responses)
             
             return {
                 "success": True,
@@ -246,17 +280,11 @@ class AIClient:
                 "tool_results": tool_results,
                 "has_tool_calls": len(tool_results) > 0
             }
-            
+        
         except Exception as e:
-            error_msg = f"Error in AI processing: {str(e)}"
-            print(error_msg)
-            import traceback
-            traceback.print_exc()
             return {
                 "success": False,
-                "message": error_msg,
-                "tool_results": [],
-                "has_tool_calls": False
+                "message": f"Error in AI chat: {str(e)}"
             }
     
     def regular_chat(self, messages: List[Dict[str, str]]) -> str:

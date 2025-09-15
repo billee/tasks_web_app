@@ -26,3 +26,15 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: Optional[str] = None
+
+class EmailHistoryResponse(BaseModel):
+    id: int
+    recipient: str
+    subject: str
+    content_preview: str
+    email_id: Optional[str]
+    status: str
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True

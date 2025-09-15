@@ -7,6 +7,8 @@ import AdminLogin from './components/Admin/AdminLogin';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import UserManagement from './components/Admin/UserManagement';
 import RegistrationRequests from './components/Admin/RegistrationRequests';
+import AdminEmailHistory from './components/Admin/EmailHistory';
+import AdminMenu from './components/AdminMenu/AdminMenu';
 import './App.css';
 
 function App() {
@@ -59,6 +61,8 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          <Route path="/admin/email-history" element={<AdminEmailHistory />} />
+
         </Routes>
       </div>
     </Router>

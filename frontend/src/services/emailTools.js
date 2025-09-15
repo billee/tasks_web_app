@@ -12,3 +12,13 @@ export const getAvailableTools = async () => {
   const response = await api.get('/email-tools/tools/available');
   return response.data;
 };
+
+export const getEmailHistory = async () => {
+    const response = await api.get('/email-tools/history');
+    return response;
+};
+
+export const getAdminEmailHistory = async () => {
+    const response = await api.get('/email-tools/admin/history');
+    return response;
+};

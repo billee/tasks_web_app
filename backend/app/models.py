@@ -1,6 +1,8 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey
+from sqlalchemy.sql import func
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
@@ -26,3 +28,19 @@ class RegistrationRequest(Base):
     reason = Column(String)
     requested_at = Column(DateTime, default=datetime.utcnow)
     status = Column(String, default="pending")  # pending, approved, rejected
+
+
+class EmailHistory(Base):
+    __tablename__ = "email_histories"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    recipient = Column(String, nullable=False)
+    subject = Column(String, nullable=False)
+    content_preview = Column(Text)
+    email_id = Column(String)  # External email service ID
+    status = Column(String, default="sent")  # sent, failed, etc.
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationship to user
+    user = relationship("User")

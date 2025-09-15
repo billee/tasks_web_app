@@ -1,420 +1,347 @@
-/* AdminDashboard.css */
-/* All styles are now scoped under .admin-dashboard */
+/* Add these styles to your existing AdminDashboard.css */
 
-.admin-dashboard * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+/* Main container */
 .admin-dashboard {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f5f6fa;
-  padding-top: 70px; /* Account for sticky header */
-  width: 100%;
-  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f5f7f9;
 }
 
 /* Sticky Header */
-.admin-dashboard .admin-dashboard-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 70px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+.admin-dashboard-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 0 30px;
-}
-
-.admin-dashboard .admin-dashboard-logo-section {
-  display: flex;
   align-items: center;
-  gap: 12px;
+  padding: 15px 30px;
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
 }
 
-.admin-dashboard .admin-dashboard-logo {
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  color: white;
-  font-weight: bold;
-}
-
-.admin-dashboard .admin-dashboard-logo-text {
-  color: white;
-  font-size: 24px;
-  font-weight: 600;
-  letter-spacing: -0.5px;
-}
-
-.admin-dashboard .admin-dashboard-profile {
+.admin-dashboard-logo-section {
   display: flex;
   align-items: center;
   gap: 15px;
 }
 
-.admin-dashboard .admin-dashboard-profile-info {
-  text-align: right;
-}
-
-.admin-dashboard .admin-dashboard-name {
+.admin-dashboard-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background-color: #6e8efb;
   color: white;
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 2px;
-}
-
-.admin-dashboard .admin-dashboard-role {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 12px;
-}
-
-.admin-dashboard .admin-dashboard-profile-avatar {
-  width: 45px;
-  height: 45px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  font-weight: bold;
+  font-size: 20px;
 }
 
-.admin-dashboard .admin-dashboard-logout-btn {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
+.admin-dashboard-logo-text {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.admin-dashboard-profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.admin-dashboard-profile-info {
+  text-align: right;
+}
+
+.admin-dashboard-name {
+  font-weight: bold;
+  color: #333;
+}
+
+.admin-dashboard-role {
   font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  color: #666;
 }
 
-.admin-dashboard .admin-dashboard-logout-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.5);
+.admin-dashboard-profile-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #6e8efb;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
 }
 
-/* Main Dashboard Content */
-.admin-dashboard .admin-dashboard-content {
-  max-width: 1200px;
-  margin: 0 auto;
+.admin-dashboard-logout-btn {
+  padding: 8px 16px;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #333;
+  transition: all 0.3s;
+}
+
+.admin-dashboard-logout-btn:hover {
+  background-color: #e9ecef;
+}
+
+/* Horizontal Menu */
+.admin-dashboard-menu {
+  display: flex;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
   padding: 0 20px;
 }
 
-.admin-dashboard .admin-dashboard-content h1 {
-  color: #2c3e50;
-  margin-bottom: 40px;
-  font-size: 32px;
-  font-weight: 700;
-  text-align: center;
-  position: relative;
-}
-
-.admin-dashboard .admin-dashboard-content h1::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 4px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 2px;
-}
-
-.admin-dashboard .admin-dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  margin: 30px 0;
-}
-
-/* User Creation Form */
-.admin-dashboard .admin-dashboard-user-creation-form {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e8ecef;
-  height: fit-content;
-}
-
-.admin-dashboard .admin-dashboard-user-creation-form h2 {
-  margin-top: 0;
-  margin-bottom: 25px;
-  color: #2c3e50;
-  font-size: 22px;
-  font-weight: 600;
-}
-
-.admin-dashboard .admin-dashboard-user-creation-form form {
+.admin-dashboard-menu-item {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.admin-dashboard .admin-dashboard-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.admin-dashboard .admin-dashboard-form-group label {
-  color: #555;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.admin-dashboard .admin-dashboard-user-creation-form input {
-  padding: 12px 16px;
-  border: 2px solid #e8ecef;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: border-color 0.3s ease;
-}
-
-.admin-dashboard .admin-dashboard-user-creation-form input:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.admin-dashboard .admin-dashboard-user-creation-form button {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  align-items: center;
+  padding: 15px 20px;
+  background: none;
   border: none;
-  border-radius: 8px;
   cursor: pointer;
-  font-weight: 600;
   font-size: 16px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  color: #555;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s;
 }
 
-.admin-dashboard .admin-dashboard-user-creation-form button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+.admin-dashboard-menu-item:hover {
+  background-color: #e9ecef;
+  color: #333;
 }
 
-/* Dashboard Stats */
-.admin-dashboard .admin-dashboard-stats {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e8ecef;
-  height: fit-content;
+.admin-dashboard-menu-item.active {
+  border-bottom-color: #6e8efb;
+  color: #6e8efb;
 }
 
-.admin-dashboard .admin-dashboard-stats h2 {
-  margin-top: 0;
-  margin-bottom: 25px;
-  color: #2c3e50;
-  font-size: 22px;
-  font-weight: 600;
-}
-
-.admin-dashboard .admin-dashboard-stats-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-.admin-dashboard .admin-dashboard-stat-card {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  padding: 20px;
-  border-radius: 10px;
-  color: white;
+.admin-dashboard-menu-item i {
+  margin-right: 8px;
+  width: 20px;
   text-align: center;
 }
 
-.admin-dashboard .admin-dashboard-stat-card:nth-child(2) {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+/* Content area */
+.admin-dashboard-content {
+  padding: 30px;
+  overflow-y: auto;
+  flex: 1;
 }
 
-.admin-dashboard .admin-dashboard-stat-number {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 5px;
+/* Users list */
+.admin-dashboard-users-list {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
 }
 
-.admin-dashboard .admin-dashboard-stat-label {
-  font-size: 14px;
-  opacity: 0.9;
+.admin-dashboard-users-list h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
 }
 
-/* Users List - Modified to span lengthwise with margins */
-.admin-dashboard .admin-dashboard-users-list {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e8ecef;
-  margin: 25px 20px;
-  width: calc(100% - 40px);
-}
-
-.admin-dashboard .admin-dashboard-users-list h2 {
-  padding: 25px 30px;
-  margin: 0;
-  background: #f8f9fa;
-  color: #2c3e50;
-  font-size: 22px;
-  font-weight: 600;
-  border-bottom: 1px solid #e8ecef;
-}
-
-.admin-dashboard .admin-dashboard-users-list table {
+.admin-dashboard-users-list table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: auto;
 }
 
-.admin-dashboard .admin-dashboard-users-list th,
-.admin-dashboard .admin-dashboard-users-list td {
-  padding: 16px 30px;
+.admin-dashboard-users-list th,
+.admin-dashboard-users-list td {
+  padding: 12px 15px;
   text-align: left;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #eee;
 }
 
-.admin-dashboard .admin-dashboard-users-list th {
-  background: #f8f9fa;
+.admin-dashboard-users-list th {
+  background-color: #f8f9fa;
   font-weight: 600;
-  color: #555;
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #495057;
 }
 
-.admin-dashboard .admin-dashboard-users-list tr:hover {
-  background: #f8f9fa;
-}
-
-.admin-dashboard .admin-dashboard-status-badge {
-  padding: 4px 12px;
-  border-radius: 20px;
+.admin-dashboard-admin-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
-.admin-dashboard .admin-dashboard-status-active {
-  background: #d4edda;
+.admin-dashboard-admin-yes {
+  background-color: #d4edda;
   color: #155724;
 }
 
-.admin-dashboard .admin-dashboard-status-inactive {
-  background: #f8d7da;
+.admin-dashboard-admin-no {
+  background-color: #f8d7da;
   color: #721c24;
 }
 
-.admin-dashboard .admin-dashboard-deactivate-btn {
-  padding: 8px 16px;
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.admin-dashboard .admin-dashboard-deactivate-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-}
-
-/* Loading State */
-.admin-dashboard .admin-dashboard-loading {
-  text-align: center;
-  padding: 60px;
-  font-size: 18px;
-  color: 666;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-}
-
-.admin-dashboard .admin-dashboard-admin-badge {
+.admin-dashboard-status-badge {
   padding: 4px 8px;
-  border-radius: 12px;
+  border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
+}
+
+.admin-dashboard-status-active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.admin-dashboard-status-inactive {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.admin-dashboard-deactivate-btn {
+  padding: 6px 12px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.admin-dashboard-deactivate-btn:hover {
+  background-color: #c82333;
+}
+
+/* User creation form */
+.admin-dashboard-user-creation-form {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.admin-dashboard-user-creation-form h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.admin-dashboard-form-group {
+  margin-bottom: 20px;
+}
+
+.admin-dashboard-form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #495057;
+}
+
+.admin-dashboard-form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.admin-dashboard-user-creation-form button {
+  padding: 10px 20px;
+  background-color: #6e8efb;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.admin-dashboard-user-creation-form button:hover {
+  background-color: #5a7df9;
+}
+
+/* Stats grid */
+.admin-dashboard-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.admin-dashboard-stat-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
 
-.admin-dashboard .admin-dashboard-admin-yes {
-  background-color: rgb(214, 63, 63);
-  color: #c6d4c6;
-  border: 1px solid #f8d7da;
+.admin-dashboard-stat-number {
+  font-size: 32px;
+  font-weight: bold;
+  color: #6e8efb;
+  margin-bottom: 8px;
 }
 
-.admin-dashboard .admin-dashboard-admin-no {
-  background-color: #f5f5f5;
+.admin-dashboard-stat-label {
   color: #666;
-  border: 1px solid #ddd;
+  font-size: 14px;
 }
 
-/* Responsive Design */
+/* Loading state */
+.admin-dashboard-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 18px;
+  color: #666;
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
-  .admin-dashboard .admin-dashboard-header {
-    padding: 0 20px;
-  }
-  
-  .admin-dashboard .admin-dashboard-logo-text {
-    font-size: 20px;
-  }
-  
-  .admin-dashboard .admin-dashboard-profile-info {
-    display: none;
-  }
-  
-  .admin-dashboard .admin-dashboard-content {
-    padding: 0 15px;
-  }
-  
-  .admin-dashboard .admin-dashboard-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  
-  .admin-dashboard .admin-dashboard-stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .admin-dashboard .admin-dashboard-user-creation-form form {
+  .admin-dashboard-header {
+    padding: 15px;
     flex-direction: column;
+    gap: 15px;
   }
   
-  .admin-dashboard .admin-dashboard-user-creation-form input {
+  .admin-dashboard-profile {
     width: 100%;
+    justify-content: space-between;
   }
   
-  .admin-dashboard .admin-dashboard-users-list {
+  .admin-dashboard-menu {
+    flex-direction: column;
+    padding: 0;
+  }
+  
+  .admin-dashboard-menu-item {
+    justify-content: center;
+    border-bottom: 1px solid #ddd;
+    border-left: 3px solid transparent;
+  }
+  
+  .admin-dashboard-menu-item.active {
+    border-bottom-color: #ddd;
+    border-left-color: #6e8efb;
+  }
+  
+  .admin-dashboard-content {
+    padding: 15px;
+  }
+  
+  .admin-dashboard-users-list {
     overflow-x: auto;
-    margin: 25px 15px;
-    width: calc(100% - 30px);
   }
   
-  .admin-dashboard .admin-dashboard-users-list th,
-  .admin-dashboard .admin-dashboard-users-list td {
-    padding: 12px 15px;
-    min-width: 120px;
+  .admin-dashboard-stats-grid {
+    grid-template-columns: 1fr;
   }
 }
