@@ -13,11 +13,14 @@ load_dotenv(dotenv_path=str(env_path))
 class EmailClient:
     def __init__(self):
         self.resend_api_key = os.getenv("RESEND_API_KEY")
+        print(f"Resend API Key: {self.resend_api_key[:10]}...")  # Print first 10 chars for verification
         # Don't raise error if API key is not set, just log a warning
         if not self.resend_api_key:
             print("WARNING: RESEND_API_KEY environment variable not set. Email functionality will be disabled.")
             self.enabled = False
             return
+        else:
+            print("Resend API Key found and loaded successfully")
             
         self.enabled = True
         self.base_url = "https://api.resend.com"
@@ -34,9 +37,6 @@ class EmailClient:
         from_email: Optional[str] = None,
         from_name: Optional[str] = "AI Assistant"
     ) -> Dict[str, Any]:
-        """
-        Send an email using Resend API
-        """
         # Check if email client is enabled
         if not self.enabled:
             return {
@@ -47,7 +47,9 @@ class EmailClient:
         try:
             # Use default from email if not provided
             if not from_email:
-                from_email = os.getenv("DEFAULT_FROM_EMAIL", "noreply@yourdomain.com")
+                from_email = os.getenv("DEFAULT_FROM_EMAIL", "onboarding@resend.dev")
+            
+            print(f"Sending email from: {from_email}, to: {to_email}, subject: {subject}")
             
             # Prepare email data
             email_data = {
@@ -75,9 +77,15 @@ class EmailClient:
                 }
             else:
                 error_data = response.json() if response.content else {}
+                error_msg = f"Failed to send email: {error_data.get('message', 'Unknown error')}"
+                
+                # Provide more specific guidance for domain verification errors
+                if "domain is not verified" in error_msg:
+                    error_msg += ". Please verify your domain in Resend or use a different email provider."
+                    
                 return {
                     "success": False,
-                    "message": f"Failed to send email: {error_data.get('message', 'Unknown error')}",
+                    "message": error_msg,
                     "status_code": response.status_code,
                     "error": error_data
                 }

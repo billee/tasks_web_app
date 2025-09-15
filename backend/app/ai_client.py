@@ -1,5 +1,5 @@
 # backend/app/ai_client.py
-import openai
+from openai import OpenAI
 import json
 import os
 from typing import List, Dict, Any, Optional
@@ -16,14 +16,18 @@ load_dotenv(dotenv_path=str(env_path))
 class AIClient:
     def __init__(self):
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        print(f"OpenAI API Key: {self.openai_api_key[:10]}...")  # Print first 10 chars
         # Don't raise error if API key is not set, just log a warning
         if not self.openai_api_key:
             print("WARNING: OPENAI_API_KEY environment variable not set. AI functionality will be disabled.")
             self.enabled = False
             return
+        else:
+            print("OpenAI API Key found and loaded successfully")   
             
         self.enabled = True
-        openai.api_key = self.openai_api_key
+        self.client = OpenAI(api_key=self.openai_api_key)
+        # openai.api_key = self.openai_api_key
         self.model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
         
         # Email tools definition
@@ -82,7 +86,7 @@ class AIClient:
             Write only the email body content:
             """
             
-            response = openai.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "You are a professional email writer. Generate clear, well-structured email content."},
@@ -197,9 +201,11 @@ class AIClient:
             # Select tools based on tool_type
             tools = self.email_tools if tool_type == "email" else []
             
+            print(f"Using tools: {tools}")
+            
             # Make the API call
             if tools:
-                response = openai.chat.completions.create(
+                response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
                     tools=tools,
@@ -209,18 +215,21 @@ class AIClient:
                 )
             else:
                 # No tools, regular chat
-                response = openai.chat.completions.create(
+                response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
                     max_tokens=1000,
                     temperature=0.7
                 )
             
+            print(f"OpenAI API response: {response}")
+            
             message = response.choices[0].message
             tool_results = []
             
             # Process tool calls if any
             if hasattr(message, 'tool_calls') and message.tool_calls:
+                print(f"Tool calls detected: {message.tool_calls}")
                 for tool_call in message.tool_calls:
                     tool_result = self.process_tool_call(tool_call)
                     tool_results.append({
@@ -228,17 +237,24 @@ class AIClient:
                         "result": tool_result
                     })
             
+            # If message content is None (when tool calls are used), provide a default message
+            message_content = message.content if message.content else "I've processed your request using the email tools."
+            
             return {
                 "success": True,
-                "message": message.content,
+                "message": message_content,
                 "tool_results": tool_results,
                 "has_tool_calls": len(tool_results) > 0
             }
             
         except Exception as e:
+            error_msg = f"Error in AI processing: {str(e)}"
+            print(error_msg)
+            import traceback
+            traceback.print_exc()
             return {
                 "success": False,
-                "message": f"Error in AI processing: {str(e)}",
+                "message": error_msg,
                 "tool_results": [],
                 "has_tool_calls": False
             }
@@ -252,7 +268,7 @@ class AIClient:
             return "AI service is not configured. Please set OPENAI_API_KEY environment variable."
             
         try:
-            response = openai.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
                 max_tokens=1000,
