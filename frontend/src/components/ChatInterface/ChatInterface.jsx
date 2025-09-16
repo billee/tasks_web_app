@@ -2,8 +2,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './ChatInterface.css';
 import { getLLMResponse } from '../../services/llm';
-import { emailToolsChat, approveAndSendEmail } from '../../services/emailTools'; // Import the email tools service
-import EmailComposer from '../EmailComposer/EmailComposer'; // Import the new EmailComposer component
+import { emailToolsChat, approveAndSendEmail } from '../../services/emailTools';
+import EmailComposer from '../EmailComposer/EmailComposer';
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState([
@@ -11,8 +11,9 @@ const ChatInterface = () => {
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [activeMenu, setActiveMenu] = useState('Email Tasks'); // Track active menu
-  const [pendingEmail, setPendingEmail] = useState(null); // Track pending email for approval
+  const [activeMenu, setActiveMenu] = useState('Email Tasks');
+  const [pendingEmail, setPendingEmail] = useState(null);
+  const [processedEmails, setProcessedEmails] = useState([]);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -27,10 +28,9 @@ const ChatInterface = () => {
     }
   }, []);
 
-
   useEffect(() => {
     scrollToBottom();
-  }, [messages, pendingEmail]);
+  }, [messages, pendingEmail, processedEmails]);
 
   const handleSendMessage = async () => {
     if (inputText.trim()) {
@@ -44,10 +44,10 @@ const ChatInterface = () => {
       try {
         let response;
         const MAX_RETRIES = 2;
-        let retries = 0;
+        let retryCount = 0;
         
         // Retry logic for timeout errors
-        while (retries <= MAX_RETRIES) {
+        while (retryCount <= MAX_RETRIES) {
           try {
             // Use email tools if Email Tasks is selected
             if (activeMenu === 'Email Tasks') {
@@ -64,19 +64,19 @@ const ChatInterface = () => {
             }
             break; // Break out of retry loop on success
           } catch (error) {
-            if (error.code === 'ECONNABORTED' && retries < MAX_RETRIES) {
+            if (error.code === 'ECONNABORTED' && retryCount < MAX_RETRIES) {
               // It's a timeout error and we have retries left
-              retries++;
+              retryCount++;
               // Show user that we're retrying
               const retryMessage = { 
-                text: `Request taking longer than expected. Retrying (${retries}/${MAX_RETRIES})...`, 
+                text: `Request taking longer than expected. Retrying (${retryCount}/${MAX_RETRIES})...`, 
                 isUser: false, 
                 time: "Just now",
                 isStatus: true
               };
               setMessages(prevMessages => [...prevMessages, retryMessage]);
               // Wait before retrying (exponential backoff)
-              await new Promise(resolve => setTimeout(resolve, 1000 * retries));
+              await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
               // Remove the status message
               setMessages(prevMessages => prevMessages.filter(msg => !msg.isStatus));
             } else {
@@ -96,7 +96,7 @@ const ChatInterface = () => {
               messageId: Date.now() // unique ID for this composition
             });
           } else {
-            // Add AI response to chat
+            // Add AI response to chat only if there's a message
             if (response.message && response.message !== "I've composed an email for your review:") {
               const aiMessage = { 
                   text: response.message, 
@@ -169,6 +169,19 @@ const ChatInterface = () => {
     try {
       // Send the approved email
       const response = await approveAndSendEmail(emailData);
+      
+      // Mark this email as processed
+      const processedEmail = {
+        ...emailData,
+        status: response.success ? 'sent' : 'failed',
+        message: response.success 
+          ? `Email sent successfully to ${emailData.recipient}` 
+          : `Failed to send email: ${response.message}`,
+        messageId: Date.now()
+      };
+      
+      setProcessedEmails(prev => [...prev, processedEmail]);
+      
       if (response.success) {
         // Add success message to chat
         const successMessage = { 
@@ -201,6 +214,24 @@ const ChatInterface = () => {
 
   // Handler for email cancellation
   const handleEmailCancel = () => {
+    // Mark this email as cancelled
+    const processedEmail = {
+      ...pendingEmail,
+      status: 'cancelled',
+      message: 'Email composition cancelled',
+      messageId: Date.now()
+    };
+    
+    setProcessedEmails(prev => [...prev, processedEmail]);
+    
+    // Add cancellation message to chat
+    const cancelMessage = { 
+      text: 'Email composition cancelled', 
+      isUser: false, 
+      time: "Just now" 
+    };
+    setMessages(prevMessages => [...prevMessages, cancelMessage]);
+    
     setPendingEmail(null);
   };
 
@@ -212,7 +243,7 @@ const ChatInterface = () => {
   };
 
   const handleLogout = () => {
-      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('authToken');
       localStorage.removeItem('userEmail');
       localStorage.removeItem('userName');
       window.location.href = '/login';
@@ -264,7 +295,19 @@ const ChatInterface = () => {
                 </div>
               ))}
 
-              {/* Email composition preview */}
+              {/* Processed email compositions */}
+              {processedEmails.map((email) => (
+                <div key={email.messageId} className="chat-message ai-message">
+                  <EmailComposer
+                    emailData={email}
+                    isProcessed={true}
+                    status={email.status}
+                    statusMessage={email.message}
+                  />
+                </div>
+              ))}
+
+              {/* Current pending email composition */}
               {pendingEmail && (
                 <div className="chat-message ai-message">
                   <EmailComposer
@@ -272,6 +315,7 @@ const ChatInterface = () => {
                     onEdit={handleEmailEdit}
                     onApprove={handleEmailApprove}
                     onCancel={handleEmailCancel}
+                    isProcessed={false}
                   />
                 </div>
               )}

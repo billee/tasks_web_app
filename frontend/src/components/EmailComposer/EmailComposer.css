@@ -1,57 +1,103 @@
 .email-composer {
-    border: 1px solid #e1e1e1;
+    border: 1px solid #ddd;
     border-radius: 8px;
-    padding: 1rem;
-    margin: 1rem 0;
-    background: white;
-  }
+    padding: 15px;
+    margin: 10px 0;
+    background-color: #f9f9f9;
+}
   
-  .email-header {
-    border-bottom: 1px solid #e1e1e1;
-    padding-bottom: 0.5rem;
-    margin-bottom: 1rem;
+.email-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.email-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.email-status {
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.email-status.sent {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.email-status.failed {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.email-status.cancelled {
+  background-color: #fff3cd;
+  color: #856404;
   }
   
   .email-field {
-    margin-bottom: 1rem;
+  margin-bottom: 15px;
   }
   
   .email-field label {
+  display: block;
+  margin-bottom: 5px;
     font-weight: bold;
-    margin-right: 0.5rem;
+  color: #555;
   }
   
-  .email-body {
-    white-space: pre-wrap;
-    border: 1px solid #e1e1e1;
-    padding: 0.5rem;
+.email-field input,
+.email-field textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
     border-radius: 4px;
-    min-height: 100px;
+  font-family: inherit;
+  box-sizing: border-box;
   }
   
-  .email-body-editable {
-    width: 100%;
-    min-height: 100px;
-    padding: 0.5rem;
-    border: 1px solid #e1e1e1;
-    border-radius: 4px;
-    resize: vertical;
+.email-field input:disabled,
+.email-field textarea:disabled {
+  background-color: #f5f5f5;
+  color: #666;
+  cursor: not-allowed;
   }
   
   .email-actions {
     display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
+  gap: 10px;
+  margin-top: 15px;
   }
   
-  .btn-edit, .btn-save, .btn-approve, .btn-cancel {
-    padding: 0.5rem 1rem;
+.btn-approve {
+  background-color: #28a745;
+  color: white;
     border: none;
+  padding: 8px 16px;
     border-radius: 4px;
     cursor: pointer;
+  font-weight: bold;
   }
   
-  .btn-edit { background: #ffc107; color: black; }
-  .btn-save { background: #17a2b8; color: white; }
-  .btn-approve { background: #28a745; color: white; }
-  .btn-cancel { background: #dc3545; color: white; }
+.btn-approve:hover {
+  background-color: #218838;
+}
+
+.btn-cancel {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-cancel:hover {
+  background-color: #c82333;
+}

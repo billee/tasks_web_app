@@ -1,62 +1,74 @@
 import React, { useState } from 'react';
 import './EmailComposer.css';
 
-const EmailComposer = ({ emailData, onEdit, onApprove, onCancel }) => {
-  const [isEditing, setIsEditing] = useState(false);
+const EmailComposer = ({
+  emailData,
+  onEdit,
+  onApprove,
+  onCancel,
+  isProcessed = false,
+  status = '',
+  statusMessage = ''
+}) => {
   const [editedContent, setEditedContent] = useState(emailData.body);
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
-  const handleSave = () => {
-    setIsEditing(false);
-    onEdit(editedContent);
-  };
-
-  const handleApprove = () => {
-    onApprove({
-      ...emailData,
-      body: editedContent
-    });
+  const handleContentChange = (e) => {
+    const newContent = e.target.value;
+    setEditedContent(newContent);
+    if (onEdit) onEdit(newContent);
   };
 
   return (
     <div className="email-composer">
       <div className="email-header">
-        <h3>Email Preview</h3>
+        <h3>Email Composition</h3>
+        {isProcessed && (
+          <div className={`email-status ${status}`}>
+            {statusMessage}
+          </div>
+        )}
       </div>
-      <div className="email-content">
+      
         <div className="email-field">
           <label>To:</label>
-          <span>{emailData.recipient}</span>
+        <input 
+          type="text" 
+          value={emailData.recipient} 
+          disabled={isProcessed}
+          readOnly
+        />
         </div>
+      
         <div className="email-field">
           <label>Subject:</label>
-          <span>{emailData.subject}</span>
+        <input 
+          type="text" 
+          value={emailData.subject} 
+          disabled={isProcessed}
+          readOnly
+        />
         </div>
+      
         <div className="email-field">
           <label>Body:</label>
-          {isEditing ? (
             <textarea
               value={editedContent}
-              onChange={(e) => setEditedContent(e.target.value)}
-              className="email-body-editable"
+          onChange={handleContentChange}
+          disabled={isProcessed}
+          rows={10}
             />
-          ) : (
-            <div className="email-body">{emailData.body}</div>
-          )}
-        </div>
       </div>
+      
+      {!isProcessed && (
       <div className="email-actions">
-        {isEditing ? (
-          <button onClick={handleSave} className="btn-save">Save Changes</button>
-        ) : (
-          <button onClick={handleEdit} className="btn-edit">Edit</button>
-        )}
-        <button onClick={handleApprove} className="btn-approve">Approve & Send</button>
-        <button onClick={onCancel} className="btn-cancel">Cancel</button>
+          <button className="btn-approve" onClick={() => onApprove({...emailData, body: editedContent})}>
+            Approve & Send
+          </button>
+          <button className="btn-cancel" onClick={onCancel}>
+            Cancel
+          </button>
       </div>
+      )}
     </div>
   );
 };
