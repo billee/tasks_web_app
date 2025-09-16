@@ -10,6 +10,10 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
+    
+    // Debug log for auth token
+    console.log('Auth token:', token);
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -24,6 +28,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Debug log for API errors
+    console.log('API Error:', error.response?.status, error.response?.data);
+    
     if (error.response?.status === 401) {
       // Token expired or invalid
       localStorage.removeItem('authToken');

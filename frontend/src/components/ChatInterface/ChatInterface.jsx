@@ -2,7 +2,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './ChatInterface.css';
 import { getLLMResponse } from '../../services/llm';
-import { emailToolsChat } from '../../services/emailTools'; // Import the email tools service
+import { emailToolsChat, approveAndSendEmail } from '../../services/emailTools'; // Import the email tools service
+import EmailComposer from '../EmailComposer/EmailComposer'; // Import the new EmailComposer component
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState([
@@ -11,6 +12,7 @@ const ChatInterface = () => {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activeMenu, setActiveMenu] = useState('Email Tasks'); // Track active menu
+  const [pendingEmail, setPendingEmail] = useState(null); // Track pending email for approval
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -18,8 +20,17 @@ const ChatInterface = () => {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+  }, []);
+
+
+  useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, pendingEmail]);
 
   const handleSendMessage = async () => {
     if (inputText.trim()) {
@@ -34,27 +45,25 @@ const ChatInterface = () => {
         let response;
         const MAX_RETRIES = 2;
         let retries = 0;
-        let lastError = null;
         
         // Retry logic for timeout errors
         while (retries <= MAX_RETRIES) {
           try {
-        // Use email tools if Email Tasks is selected
-        if (activeMenu === 'Email Tasks') {
-          response = await emailToolsChat(updatedMessages);
-        } else {
-          // Use regular LLM for other menus
-        const aiResponseText = await getLLMResponse(updatedMessages);
-          response = {
-            success: true,
-            message: aiResponseText,
-            tool_results: [],
-            has_tool_calls: false
-          };
-        }
+            // Use email tools if Email Tasks is selected
+            if (activeMenu === 'Email Tasks') {
+              response = await emailToolsChat(updatedMessages);
+            } else {
+              // Use regular LLM for other menus
+              const aiResponseText = await getLLMResponse(updatedMessages);
+              response = {
+                success: true,
+                message: aiResponseText,
+                tool_results: [],
+                has_tool_calls: false
+              };
+            }
             break; // Break out of retry loop on success
           } catch (error) {
-            lastError = error;
             if (error.code === 'ECONNABORTED' && retries < MAX_RETRIES) {
               // It's a timeout error and we have retries left
               retries++;
@@ -76,31 +85,48 @@ const ChatInterface = () => {
           }
         }
         
+        console.log('Full email tools response:', JSON.stringify(response, null, 2));
+
         if (response && response.success) {
-          // Add AI response to chat
-          const aiMessage = { 
-            text: response.message, 
-          isUser: false, 
-          time: "Just now" 
-        };
-          setMessages(prevMessages => [...prevMessages, aiMessage]);
-          
-          // Add tool results if any
-          if (response.tool_results && response.tool_results.length > 0) {
-            response.tool_results.forEach(toolResult => {
-              const toolMessage = {
-                text: `Tool Result: ${JSON.stringify(toolResult.result, null, 2)}`,
-                isUser: false,
-                time: "Just now",
-                isToolResult: true
-              };
-              setMessages(prevMessages => [...prevMessages, toolMessage]);
+          // Check if response contains email composition data
+          if (response.email_composition) {
+            console.log('Setting pending email:', response.email_composition);
+            setPendingEmail({
+              ...response.email_composition,
+              messageId: Date.now() // unique ID for this composition
             });
+          } else {
+            // Add AI response to chat
+            if (response.message && response.message !== "I've composed an email for your review:") {
+              const aiMessage = { 
+                  text: response.message, 
+                  isUser: false, 
+                  time: "Just now" 
+              };
+              setMessages(prevMessages => [...prevMessages, aiMessage]);
+            }
+
+            // Add tool results if any
+            if (response.tool_results && response.tool_results.length > 0) {
+              response.tool_results.forEach(toolResult => {
+                const toolMessage = {
+                  text: `Tool Result: ${JSON.stringify(toolResult.result, null, 2)}`,
+                  isUser: false,
+                  time: "Just now",
+                  isToolResult: true
+                };
+                setMessages(prevMessages => [...prevMessages, toolMessage]);
+              });
+            }
           }
         } else {
-          // Handle API errors gracefully
+          // Handle API errors gracefully 
+          const errorText = response && response.message 
+            ? response.message 
+            : "Sorry, I'm having trouble with email tools right now. Please try again.";
+          
           const errorResponse = { 
-            text: "Sorry, I'm having trouble with email tools right now. Please try again.", 
+            text: errorText, 
             isUser: false, 
             time: "Just now" 
           };
@@ -110,16 +136,16 @@ const ChatInterface = () => {
         // Handle API errors gracefully
         console.error('Error getting AI response:', error);
         
-        let errorMessage = "Sorry, I'm having trouble responding right now. Please try again.";
+        let errorMessageText = "Sorry, I'm having trouble responding right now. Please try again.";
         
         if (error.code === 'ECONNABORTED') {
-          errorMessage = "The request is taking too long. Please check your connection and try again.";
+          errorMessageText = "The request is taking too long. Please check your connection and try again.";
         } else if (error.response && error.response.status >= 500) {
-          errorMessage = "The server is experiencing issues. Please try again later.";
+          errorMessageText = "The server is experiencing issues. Please try again later.";
         }
         
         const errorResponse = { 
-          text: "Sorry, I'm having trouble responding right now. Please try again.", 
+          text: errorMessageText, 
           isUser: false, 
           time: "Just now" 
         };
@@ -128,6 +154,54 @@ const ChatInterface = () => {
         setIsLoading(false);
       }
     }
+  };
+
+  // Handler for email edit
+  const handleEmailEdit = (newContent) => {
+    setPendingEmail(prev => ({
+      ...prev,
+      body: newContent
+    }));
+  };
+
+  // Handler for email approval
+  const handleEmailApprove = async (emailData) => {
+    try {
+      // Send the approved email
+      const response = await approveAndSendEmail(emailData);
+      if (response.success) {
+        // Add success message to chat
+        const successMessage = { 
+          text: `Email sent successfully to ${emailData.recipient}`, 
+          isUser: false, 
+          time: "Just now" 
+        };
+        setMessages(prevMessages => [...prevMessages, successMessage]);
+      } else {
+        // Add error message to chat
+        const errorMessage = { 
+          text: `Failed to send email: ${response.message}`, 
+          isUser: false, 
+          time: "Just now" 
+        };
+        setMessages(prevMessages => [...prevMessages, errorMessage]);
+      }
+    } catch (error) {
+      // Handle error
+      const errorMessage = { 
+        text: "Failed to send email. Please try again.", 
+        isUser: false, 
+        time: "Just now" 
+      };
+      setMessages(prevMessages => [...prevMessages, errorMessage]);
+    } finally {
+      setPendingEmail(null);
+    }
+  };
+
+  // Handler for email cancellation
+  const handleEmailCancel = () => {
+    setPendingEmail(null);
   };
 
   // Add the missing handleKeyPress function
@@ -189,6 +263,18 @@ const ChatInterface = () => {
                 <span className="message-time">{message.time}</span>
                 </div>
               ))}
+
+              {/* Email composition preview */}
+              {pendingEmail && (
+                <div className="chat-message ai-message">
+                  <EmailComposer
+                    emailData={pendingEmail}
+                    onEdit={handleEmailEdit}
+                    onApprove={handleEmailApprove}
+                    onCancel={handleEmailCancel}
+                  />
+                </div>
+              )}
 
               {/* Typing indicator */}
               {isLoading && (

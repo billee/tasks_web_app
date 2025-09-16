@@ -1,0 +1,57 @@
+.email-composer {
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    background: white;
+  }
+  
+  .email-header {
+    border-bottom: 1px solid #e1e1e1;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .email-field {
+    margin-bottom: 1rem;
+  }
+  
+  .email-field label {
+    font-weight: bold;
+    margin-right: 0.5rem;
+  }
+  
+  .email-body {
+    white-space: pre-wrap;
+    border: 1px solid #e1e1e1;
+    padding: 0.5rem;
+    border-radius: 4px;
+    min-height: 100px;
+  }
+  
+  .email-body-editable {
+    width: 100%;
+    min-height: 100px;
+    padding: 0.5rem;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+    resize: vertical;
+  }
+  
+  .email-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  
+  .btn-edit, .btn-save, .btn-approve, .btn-cancel {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .btn-edit { background: #ffc107; color: black; }
+  .btn-save { background: #17a2b8; color: white; }
+  .btn-approve { background: #28a745; color: white; }
+  .btn-cancel { background: #dc3545; color: white; }

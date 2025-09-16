@@ -123,33 +123,17 @@ class AIClient:
             # Generate email content
             email_content = self.generate_email_content(content_request, tone)
             
-            # Format as HTML
-            html_content = email_client.format_email_html(email_content)
-            
-            # Send the email
-            result = email_client.send_email(
-                to_email=to_email,
-                subject=subject,
-                html_content=html_content
-            )
-            
-            if result["success"]:
-                return {
-                    "success": True,
-                    "message": f"Email sent successfully to {to_email}",
-                    "details": {
-                        "recipient": to_email,
-                        "subject": subject,
-                        "content_preview": email_content[:100] + "..." if len(email_content) > 100 else email_content,
-                        "email_id": result.get("email_id")
-                    }
+            # Return composition data instead of sending immediately
+            return {
+                "success": True,
+                "pending_approval": True,
+                "email_composition": {
+                    "recipient": to_email,
+                    "subject": subject,
+                    "body": email_content,
+                    "tone": tone
                 }
-            else:
-                return {
-                    "success": False,
-                    "message": f"Failed to send email: {result['message']}",
-                    "error": result.get("error")
-                }
+            }
                 
         except Exception as e:
             return {
@@ -227,6 +211,39 @@ class AIClient:
                         "result": tool_result
                     })
                 
+
+
+                    pending_email_compositions = []
+
+                    # Check if we have email compositions pending approval
+                    for tool_result in tool_results:
+                        if (tool_result["tool_name"] == "send_email" and 
+                            tool_result["result"].get("pending_approval") and 
+                            tool_result["result"].get("email_composition")):
+                            pending_email_compositions.append(tool_result)
+
+                    if pending_email_compositions:
+                        # Return the first email composition for approval
+                        email_composition = pending_email_compositions[0]["result"]["email_composition"]
+                        response_data = {
+                            "success": True,
+                            "message": "I've composed an email for your review:",
+                            "email_composition": email_composition,
+                            "has_tool_calls": True
+                        }
+                        
+                        # Include tool_results only if needed for debugging
+                        if os.getenv("DEBUG", "False").lower() == "true":
+                            response_data["tool_results"] = tool_results
+                        else:
+                            response_data["tool_results"] = []
+                        
+                        return response_data
+                
+
+
+
+
                 # Create tool messages for the conversation
                 tool_messages = []
                 for i, tool_call in enumerate(message.tool_calls):
@@ -259,12 +276,15 @@ class AIClient:
                 for tool_result in tool_results:
                     if tool_result["tool_name"] == "send_email":
                         result = tool_result["result"]
-                        if result["success"]:
+                        if result["success"] and not result.get("pending_approval"):
                             friendly_responses.append(
                                 f"✅ I've sent an email to {result['details']['recipient']} "
                                 f"with subject '{result['details']['subject']}'. "
                                 f"The email has been successfully delivered!"
                             )
+                        elif result["success"] and result.get("pending_approval"):
+                            # This case is handled above, but keeping for completeness
+                            pass
                         else:
                             friendly_responses.append(
                                 f"❌ Sorry, I couldn't send the email. Error: {result['message']}"
