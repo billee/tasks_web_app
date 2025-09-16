@@ -13,6 +13,7 @@ from app.models import User
 from app.ai_client import ai_client
 from .tools.email_registry import email_tool_registry
 from app.schemas import EmailHistoryResponse 
+from app.email_client import email_client
 
 
 router = APIRouter(prefix="/email-tools", tags=["email-tools"])
