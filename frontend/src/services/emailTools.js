@@ -45,3 +45,8 @@ export const cancelEmailComposition = async (compositionId) => {
   const response = await api.delete(`/email-tools/cancel-composition/${compositionId}`);
   return response.data;
 };
+
+export const getEmailContent = async (emailId) => {
+  const response = await api.get(`/email-tools/email-content/${emailId}`);
+  return response.data;
+};

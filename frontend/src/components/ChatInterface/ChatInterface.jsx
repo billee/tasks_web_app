@@ -4,6 +4,7 @@ import './ChatInterface.css';
 import { getLLMResponse } from '../../services/llm';
 import { emailToolsChat, approveAndSendEmail } from '../../services/emailTools';
 import EmailComposer from '../EmailComposer/EmailComposer';
+import { getEmailContent } from '../../services/emailTools';
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState([
@@ -15,6 +16,8 @@ const ChatInterface = () => {
   const [pendingEmail, setPendingEmail] = useState(null);
   const [processedEmails, setProcessedEmails] = useState([]);
   const messagesEndRef = useRef(null);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [currentEmailContent, setCurrentEmailContent] = useState('');
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -177,7 +180,8 @@ const ChatInterface = () => {
         message: response.success 
           ? `Email sent successfully to ${emailData.recipient}` 
           : `Failed to send email: ${response.message}`,
-        messageId: Date.now()
+        messageId: Date.now(),
+        emailId: response.email_id // Store the email ID from the database
       };
       
       setProcessedEmails(prev => [...prev, processedEmail]);
@@ -249,6 +253,20 @@ const ChatInterface = () => {
       window.location.href = '/login';
   };
 
+  const fetchEmailContent = async (emailId) => {
+    try {
+      const response = await getEmailContent(emailId);
+      if (response.success) {
+        setCurrentEmailContent(response.email_content);
+        setIsEmailModalOpen(true);
+      }
+    } catch (error) {
+      console.error('Error fetching email content:', error);
+    }
+  };
+
+
+
   return (
     <div className="chat-interface">
       {/* Sticky Header */}
@@ -298,12 +316,18 @@ const ChatInterface = () => {
               {/* Processed email compositions */}
               {processedEmails.map((email) => (
                 <div key={email.messageId} className="chat-message ai-message">
-                  <EmailComposer
-                    emailData={email}
-                    isProcessed={true}
-                    status={email.status}
-                    statusMessage={email.message}
-                  />
+                  <div className="email-sent-message">
+                    {email.message}
+                    {email.status === 'sent' && (
+                      <button 
+                        className="email-view-icon" 
+                        onClick={() => fetchEmailContent(email.emailId)}
+                        title="View email content"
+                      >
+                        <i className="fas fa-envelope"></i>
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
 
@@ -330,7 +354,29 @@ const ChatInterface = () => {
                     </div>
                 </div>
               )}
-            
+
+              {/* Email Content Modal */}
+              {isEmailModalOpen && (
+                <div className="modal-overlay" onClick={() => setIsEmailModalOpen(false)}>
+                  <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-header">
+                      <h3>Email Content</h3>
+                      <button 
+                        className="modal-close" 
+                        onClick={() => setIsEmailModalOpen(false)}
+                      >
+                        &times;
+                      </button>
+                    </div>
+                    <div 
+                      className="email-content-preview" 
+                      dangerouslySetInnerHTML={{ __html: currentEmailContent }} 
+                    />
+                  </div>
+                </div>
+              )}
+
+
               <div ref={messagesEndRef} />
             </div>
           
