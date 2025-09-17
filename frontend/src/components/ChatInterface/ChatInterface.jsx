@@ -155,18 +155,23 @@ const ChatInterface = () => {
   };
 
   // Handler for email edit
-  const handleEmailEdit = (newContent) => {
-    setPendingEmail(prev => ({
-      ...prev,
-      body: newContent
-    }));
+  const handleEmailEdit = (newEmailData) => {
+    setPendingEmail(newEmailData);
   };
 
   // Handler for email approval
   const handleEmailApprove = async (emailData) => {
     try {
-      // Send the approved email
-      const response = await approveAndSendEmail(emailData);
+      // Create a new object with only the fields the backend expects
+      const emailPayload = {
+        recipient: emailData.recipient,
+        subject: emailData.subject,
+        body: emailData.body
+        // Don't include messageId, tone, or other unexpected fields
+      };
+      
+      // Send the approved email with only the required fields
+      const response = await approveAndSendEmail(emailPayload);
       
       if (response.success) {
         // Add success message to chat with icon
@@ -197,7 +202,6 @@ const ChatInterface = () => {
       };
       setMessages(prevMessages => [...prevMessages, errorMessage]);
     } finally {
-      // Clear the pending email
       setPendingEmail(null);
     }
   };

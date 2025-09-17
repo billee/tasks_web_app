@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './EmailComposer.css';
 
 const EmailComposer = ({
@@ -11,11 +11,41 @@ const EmailComposer = ({
   statusMessage = ''
 }) => {
   const [editedContent, setEditedContent] = useState(emailData.body);
+  const [editedRecipient, setEditedRecipient] = useState(emailData.recipient);
+  const [editedSubject, setEditedSubject] = useState(emailData.subject);
+  
+  // Update local states when emailData changes
+  useEffect(() => {
+    setEditedContent(emailData.body);
+    setEditedRecipient(emailData.recipient);
+    setEditedSubject(emailData.subject);
+  }, [emailData]);
 
   const handleContentChange = (e) => {
     const newContent = e.target.value;
     setEditedContent(newContent);
-    if (onEdit) onEdit(newContent);
+    if (onEdit) onEdit({ ...emailData, body: newContent });
+  };
+  
+  const handleRecipientChange = (e) => {
+    const newRecipient = e.target.value;
+    setEditedRecipient(newRecipient);
+    if (onEdit) onEdit({ ...emailData, recipient: newRecipient });
+  };
+  
+  const handleSubjectChange = (e) => {
+    const newSubject = e.target.value;
+    setEditedSubject(newSubject);
+    if (onEdit) onEdit({ ...emailData, subject: newSubject });
+  };
+  
+  const handleApprove = () => {
+    onApprove({
+      ...emailData,
+      recipient: editedRecipient,
+      subject: editedSubject,
+      body: editedContent
+    });
   };
 
   return (
@@ -33,9 +63,9 @@ const EmailComposer = ({
           <label>To:</label>
         <input 
           type="text" 
-          value={emailData.recipient} 
+          value={editedRecipient} 
+          onChange={handleRecipientChange}
           disabled={isProcessed}
-          readOnly
         />
         </div>
       
@@ -43,9 +73,9 @@ const EmailComposer = ({
           <label>Subject:</label>
         <input 
           type="text" 
-          value={emailData.subject} 
+          value={editedSubject} 
+          onChange={handleSubjectChange}
           disabled={isProcessed}
-          readOnly
         />
         </div>
       
@@ -61,7 +91,7 @@ const EmailComposer = ({
       
       {!isProcessed && (
       <div className="email-actions">
-          <button className="btn-approve" onClick={() => onApprove({...emailData, body: editedContent})}>
+          <button className="btn-approve" onClick={handleApprove}>
             Approve & Send
           </button>
           <button className="btn-cancel" onClick={onCancel}>

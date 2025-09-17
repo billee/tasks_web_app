@@ -61,6 +61,13 @@
   box-sizing: border-box;
   }
   
+.email-field input:focus,
+.email-field textarea:focus {
+  outline: none;
+  border-color: #6e8efb;
+  box-shadow: 0 0 0 2px rgba(110, 142, 251, 0.2);
+}
+
 .email-field input:disabled,
 .email-field textarea:disabled {
   background-color: #f5f5f5;
