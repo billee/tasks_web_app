@@ -199,7 +199,7 @@ async def approve_and_send_email(
             return {
                 "success": True, 
                 "message": "Email sent successfully",
-                "email_id": email_history.id  # Return the database ID
+                "email_id": email_history.id  # Make sure this is returned
             }
         else:
             return {"success": False, "message": result["message"]}

@@ -570,3 +570,23 @@
   background-color: #f9f9f9;
   border-radius: 5px;
 }
+
+/* Add these styles to fix email content alignment */
+.email-content-preview {
+  line-height: 1.6;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  text-align: left;
+}
+
+.email-content-preview p {
+  margin-bottom: 1em;
+  text-align: left;
+}
+
+.email-content-preview br {
+  display: block;
+  content: "";
+  margin-bottom: 0.5em;
+}

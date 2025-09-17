@@ -168,28 +168,36 @@ const ChatInterface = () => {
       // Send the approved email
       const response = await approveAndSendEmail(emailData);
       
-      // Add email status directly to messages array
-      const emailStatusMessage = { 
-        text: `Email sent to ${emailData.recipient}`, 
-        isUser: false, 
-        time: "Just now",
-        isEmailStatus: true,
-        emailId: response.email_id,
-        statusIcon: true
-      };
-      
-      setMessages(prevMessages => [...prevMessages, emailStatusMessage]);
-      
+      if (response.success) {
+        // Add success message to chat with icon
+        const successMessage = { 
+          text: `Email sent to ${emailData.recipient}`, 
+          isUser: false, 
+          time: "Just now",
+          isEmailStatus: true,
+          emailId: response.email_id,
+          statusIcon: true
+        };
+        setMessages(prevMessages => [...prevMessages, successMessage]);
+      } else {
+        // Add error message to chat
+        const errorMessage = { 
+          text: `Failed to send email: ${response.message}`, 
+          isUser: false, 
+          time: "Just now" 
+        };
+        setMessages(prevMessages => [...prevMessages, errorMessage]);
+      }
     } catch (error) {
-      // Handle error by adding a failed status message
+      // Handle error
       const errorMessage = { 
         text: "Failed to send email. Please try again.", 
         isUser: false, 
-        time: "Just now",
-        isEmailStatus: true
+        time: "Just now" 
       };
       setMessages(prevMessages => [...prevMessages, errorMessage]);
     } finally {
+      // Clear the pending email
       setPendingEmail(null);
     }
   };
