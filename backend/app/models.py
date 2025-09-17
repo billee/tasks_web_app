@@ -38,6 +38,7 @@ class EmailHistory(Base):
     recipient = Column(String, nullable=False)
     subject = Column(String, nullable=False)
     content_preview = Column(Text)
+    full_content_html = Column(Text, nullable=True)
     email_id = Column(String)  # External email service ID
     status = Column(String, default="sent")  # sent, failed, etc.
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -181,19 +181,24 @@ async def approve_and_send_email(
         )
         
         if result["success"]:
-            # Store in history
+            # Store in history with full HTML content
             email_history = EmailHistory(
                 user_id=current_user.id,
                 recipient=email_data.recipient,
                 subject=email_data.subject,
                 content_preview=email_data.body[:100] + "..." if len(email_data.body) > 100 else email_data.body,
+                full_content_html=html_content,  # Store the full HTML content
                 email_id=result.get("email_id"),
                 status="sent"
             )
             db.add(email_history)
             db.commit()
             
-            return {"success": True, "message": "Email sent successfully"}
+            return {
+                "success": True, 
+                "message": "Email sent successfully",
+                "email_id": email_history.id  # Return the ID for future reference
+            }
         else:
             return {"success": False, "message": result["message"]}
             
@@ -216,3 +221,24 @@ async def cancel_email_composition(
 ):
     # Implementation for canceling composition
     return {"success": True, "message": "Composition canceled"}
+
+
+# Add a new endpoint to get email content by ID
+@router.get("/email-content/{email_id}")
+async def get_email_content(
+    email_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    email_history = db.query(EmailHistory).filter(
+        EmailHistory.id == email_id,
+        EmailHistory.user_id == current_user.id
+    ).first()
+    
+    if not email_history:
+        raise HTTPException(status_code=404, detail="Email not found")
+    
+    return {
+        "success": True,
+        "email_content": email_history.full_content_html
+    }
