@@ -478,11 +478,27 @@
   cursor: pointer;
 }
 
-
-.email-sent-message {
+/* Update the message bubble to handle inline icons */
+.chat-interface .message-bubble {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  padding: 10px 15px;
+  border-radius: 18px;
+  max-width: 70%;
+  word-wrap: break-word;
+}
+
+.user-message .message-bubble {
+  background-color: #007bff;
+  color: white;
+  margin-left: auto;
+}
+
+.ai-message .message-bubble {
+  background-color: #f0f8ff;
+  color: #333;
+  border: 1px solid #d1e7ff;
 }
 
 .email-view-icon {
@@ -492,12 +508,18 @@
   cursor: pointer;
   font-size: 16px;
   padding: 5px;
+  margin-left: 10px;
+}
+
+.user-message .email-view-icon {
+  color: white;
 }
 
 .email-view-icon:hover {
-  color: #0056b3;
+  opacity: 0.8;
 }
 
+/* Modal styles */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -544,4 +566,7 @@
 
 .email-content-preview {
   line-height: 1.6;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
 }

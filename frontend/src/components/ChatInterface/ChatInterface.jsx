@@ -14,7 +14,6 @@ const ChatInterface = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeMenu, setActiveMenu] = useState('Email Tasks');
   const [pendingEmail, setPendingEmail] = useState(null);
-  const [processedEmails, setProcessedEmails] = useState([]);
   const messagesEndRef = useRef(null);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [currentEmailContent, setCurrentEmailContent] = useState('');
@@ -30,10 +29,6 @@ const ChatInterface = () => {
       return;
     }
   }, []);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, pendingEmail, processedEmails]);
 
   const handleSendMessage = async () => {
     if (inputText.trim()) {
@@ -173,42 +168,25 @@ const ChatInterface = () => {
       // Send the approved email
       const response = await approveAndSendEmail(emailData);
       
-      // Mark this email as processed
-      const processedEmail = {
-        ...emailData,
-        status: response.success ? 'sent' : 'failed',
-        message: response.success 
-          ? `Email sent successfully to ${emailData.recipient}` 
-          : `Failed to send email: ${response.message}`,
-        messageId: Date.now(),
-        emailId: response.email_id // Store the email ID from the database
+      // Add email status directly to messages array
+      const emailStatusMessage = { 
+        text: `Email sent to ${emailData.recipient}`, 
+        isUser: false, 
+        time: "Just now",
+        isEmailStatus: true,
+        emailId: response.email_id,
+        statusIcon: true
       };
       
-      setProcessedEmails(prev => [...prev, processedEmail]);
+      setMessages(prevMessages => [...prevMessages, emailStatusMessage]);
       
-      if (response.success) {
-        // Add success message to chat
-        const successMessage = { 
-          text: `Email sent successfully to ${emailData.recipient}`, 
-          isUser: false, 
-          time: "Just now" 
-        };
-        setMessages(prevMessages => [...prevMessages, successMessage]);
-      } else {
-        // Add error message to chat
-        const errorMessage = { 
-          text: `Failed to send email: ${response.message}`, 
-          isUser: false, 
-          time: "Just now" 
-        };
-        setMessages(prevMessages => [...prevMessages, errorMessage]);
-      }
     } catch (error) {
-      // Handle error
+      // Handle error by adding a failed status message
       const errorMessage = { 
         text: "Failed to send email. Please try again.", 
         isUser: false, 
-        time: "Just now" 
+        time: "Just now",
+        isEmailStatus: true
       };
       setMessages(prevMessages => [...prevMessages, errorMessage]);
     } finally {
@@ -218,16 +196,6 @@ const ChatInterface = () => {
 
   // Handler for email cancellation
   const handleEmailCancel = () => {
-    // Mark this email as cancelled
-    const processedEmail = {
-      ...pendingEmail,
-      status: 'cancelled',
-      message: 'Email composition cancelled',
-      messageId: Date.now()
-    };
-    
-    setProcessedEmails(prev => [...prev, processedEmail]);
-    
     // Add cancellation message to chat
     const cancelMessage = { 
       text: 'Email composition cancelled', 
@@ -264,8 +232,6 @@ const ChatInterface = () => {
       console.error('Error fetching email content:', error);
     }
   };
-
-
 
   return (
     <div className="chat-interface">
@@ -307,27 +273,18 @@ const ChatInterface = () => {
               {messages.map((message, index) => (
                 <div key={index} className={`chat-message ${message.isUser ? 'user-message' : 'ai-message'}`}>
                   <div className="message-bubble">
-                  {message.text}
-                </div>
-                <span className="message-time">{message.time}</span>
-                </div>
-              ))}
-
-              {/* Processed email compositions */}
-              {processedEmails.map((email) => (
-                <div key={email.messageId} className="chat-message ai-message">
-                  <div className="email-sent-message">
-                    {email.message}
-                    {email.status === 'sent' && (
+                    {message.text}
+                    {message.statusIcon && (
                       <button 
                         className="email-view-icon" 
-                        onClick={() => fetchEmailContent(email.emailId)}
+                        onClick={() => fetchEmailContent(message.emailId)}
                         title="View email content"
                       >
                         <i className="fas fa-envelope"></i>
                       </button>
                     )}
                   </div>
+                  <span className="message-time">{message.time}</span>
                 </div>
               ))}
 

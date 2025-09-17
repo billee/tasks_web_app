@@ -164,6 +164,8 @@ class EmailComposition(BaseModel):
     body: str
     composition_id: Optional[str] = None
 
+
+
 # Add new endpoints
 @router.post("/approve-and-send")
 async def approve_and_send_email(
@@ -187,7 +189,7 @@ async def approve_and_send_email(
                 recipient=email_data.recipient,
                 subject=email_data.subject,
                 content_preview=email_data.body[:100] + "..." if len(email_data.body) > 100 else email_data.body,
-                full_content_html=html_content,  # Store the full HTML content
+                full_content_html=html_content,
                 email_id=result.get("email_id"),
                 status="sent"
             )
@@ -197,13 +199,16 @@ async def approve_and_send_email(
             return {
                 "success": True, 
                 "message": "Email sent successfully",
-                "email_id": email_history.id  # Return the ID for future reference
+                "email_id": email_history.id  # Return the database ID
             }
         else:
             return {"success": False, "message": result["message"]}
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+
 
 @router.post("/save-draft")
 async def save_email_draft(
