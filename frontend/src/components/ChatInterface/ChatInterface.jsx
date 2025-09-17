@@ -17,7 +17,11 @@ const ChatInterface = () => {
   const messagesEndRef = useRef(null);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [currentEmailContent, setCurrentEmailContent] = useState('');
-
+  const [currentEmail, setCurrentEmail] = useState({
+    recipient: '',
+    subject: '',
+    content: ''
+  });
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -181,7 +185,9 @@ const ChatInterface = () => {
           time: "Just now",
           isEmailStatus: true,
           emailId: response.email_id,
-          statusIcon: true
+          statusIcon: true,
+          recipient: emailData.recipient,  // Add this
+          subject: emailData.subject 
         };
         setMessages(prevMessages => [...prevMessages, successMessage]);
       } else {
@@ -233,11 +239,15 @@ const ChatInterface = () => {
       window.location.href = '/login';
   };
 
-  const fetchEmailContent = async (emailId) => {
+  const fetchEmailContent = async (emailId, recipient, subject) => {
     try {
       const response = await getEmailContent(emailId);
       if (response.success) {
-        setCurrentEmailContent(response.email_content);
+        setCurrentEmail({
+          recipient: recipient,
+          subject: subject,
+          content: response.email_content
+        });
         setIsEmailModalOpen(true);
       }
     } catch (error) {
@@ -287,14 +297,14 @@ const ChatInterface = () => {
                   <div className="message-bubble">
                     {message.text}
                     {message.statusIcon && (
-                      <button 
-                        className="email-view-icon" 
-                        onClick={() => fetchEmailContent(message.emailId)}
-                        title="View email content"
-                      >
-                        <i className="fas fa-envelope"></i>
-                      </button>
-                    )}
+                    <button 
+                      className="email-view-icon" 
+                      onClick={() => fetchEmailContent(message.emailId, message.recipient, message.subject)}
+                      title="View email content"
+                    >
+                      <i className="fas fa-envelope"></i>
+                    </button>
+                  )}
                   </div>
                   <span className="message-time">{message.time}</span>
                 </div>
@@ -316,11 +326,11 @@ const ChatInterface = () => {
               {/* Typing indicator */}
               {isLoading && (
                 <div className="chat-message ai-message">
-                <div className="message-bubble typing-indicator">
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                    </div>
+                  <div className="message-bubble typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
                 </div>
               )}
 
@@ -337,10 +347,15 @@ const ChatInterface = () => {
                         &times;
                       </button>
                     </div>
-                    <div 
-                      className="email-content-preview" 
-                      dangerouslySetInnerHTML={{ __html: currentEmailContent }} 
-                    />
+                    <div className="email-content-preview">
+                      <div className="email-meta">
+                        <p><strong>To:</strong> {currentEmail.recipient}</p>
+                        <p><strong>Subject:</strong> {currentEmail.subject}</p>
+                      </div>
+                      <div 
+                        dangerouslySetInnerHTML={{ __html: currentEmail.content }} 
+                      />
+                    </div>
                   </div>
                 </div>
               )}

@@ -335,9 +335,11 @@
 
 /* Typing indicator */
 .typing-indicator {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   height: 20px;
+  justify-content: center;
+  padding: 0 10px;
 }
 
 .typing-indicator span {
@@ -347,6 +349,7 @@
   border-radius: 50%;
   margin: 0 2px;
   animation: typing 1s infinite;
+  display: inline-block;
 }
 
 .typing-indicator span:nth-child(2) {
@@ -366,6 +369,37 @@
     transform: translateY(-5px);
   }
 }
+
+/* Ensure typing indicator container doesn't use flex */
+.chat-message.ai-message .typing-indicator-container {
+  display: block;
+}
+
+.chat-message.ai-message .typing-indicator-container .message-bubble {
+  display: inline-block;
+  width: auto;
+}
+
+
+/* More specific typing indicator fixes */
+.ai-message .message-bubble.typing-indicator {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 15px;
+  min-width: 60px;
+}
+
+.ai-message .message-bubble.typing-indicator span {
+  flex: 0 0 auto;
+  height: 8px;
+  width: 8px;
+  background: #999;
+  border-radius: 50%;
+  margin: 0 2px;
+  animation: typing 1s infinite;
+}
+
 
 /* Disabled state for input and button */
 .message-input:disabled,
@@ -400,6 +434,8 @@
   padding: 15px;
   margin: 10px 0;
   background-color: #f9f9f9;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .email-header {
@@ -499,6 +535,8 @@
   background-color: #f0f8ff;
   color: #333;
   border: 1px solid #d1e7ff;
+  display: block;
+  text-align: center;
 }
 
 .email-view-icon {
@@ -589,4 +627,45 @@
   display: block;
   content: "";
   margin-bottom: 0.5em;
+}
+
+/* Add these styles to your CSS */
+.email-meta {
+  padding: 10px;
+  background-color: #f0f8ff;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  border-left: 4px solid #6e8efb;
+}
+
+.email-meta p {
+  margin: 5px 0;
+}
+
+.email-content-preview {
+  line-height: 1.6;
+}
+
+.email-content-preview > div {
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+.email-meta {
+  padding: 10px;
+  background-color: #f0f8ff;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  border-left: 4px solid #6e8efb;
+}
+
+.email-meta p {
+  margin: 5px 0;
+}
+
+.email-content-preview > div {
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
 }
