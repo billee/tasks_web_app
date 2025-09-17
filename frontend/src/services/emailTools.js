@@ -2,9 +2,15 @@ import api from './api';
 
 export const emailToolsChat = async (messages, toolType = 'email') => {
   try {
+    const formattedMessages = messages.map(msg => ({
+      text: msg.text,
+      isUser: msg.isUser,
+      time: msg.time || new Date().toISOString()
+    }));
+
     const response = await api.post('/email-tools/chat', {
-      messages,
-      tool_type: toolType
+      messages: formattedMessages,
+      tool_type: toolType,
     });
     return response.data;
   } catch (error) {

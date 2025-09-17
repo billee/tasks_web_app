@@ -5,10 +5,11 @@ import { getLLMResponse } from '../../services/llm';
 import { emailToolsChat, approveAndSendEmail } from '../../services/emailTools';
 import EmailComposer from '../EmailComposer/EmailComposer';
 import { getEmailContent } from '../../services/emailTools';
+import { formatTime, getCurrentTimestamp } from '../../utils/timeUtils';
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState([
-    { text: "Hello! I'm your AI assistant. How can I help with your business tasks today?", isUser: false, time: "Just now" }
+    { text: "Hello! I'm your AI assistant. How can I help with your business tasks today?", isUser: false, time: new Date().toISOString() }
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -16,7 +17,6 @@ const ChatInterface = () => {
   const [pendingEmail, setPendingEmail] = useState(null);
   const messagesEndRef = useRef(null);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const [currentEmailContent, setCurrentEmailContent] = useState('');
   const [currentEmail, setCurrentEmail] = useState({
     recipient: '',
     subject: '',
@@ -34,10 +34,19 @@ const ChatInterface = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // This will force a re-render and update the time displays
+      setMessages(prevMessages => [...prevMessages]);
+    }, 60000); // Update every minute
+  
+    return () => clearInterval(interval);
+  }, []);
+
   const handleSendMessage = async () => {
     if (inputText.trim()) {
       // Add user message
-      const newMessage = { text: inputText, isUser: true, time: "Just now" };
+      const newMessage = { text: inputText, isUser: true, time: new Date().toISOString() };
       const updatedMessages = [...messages, newMessage];
       setMessages(updatedMessages);
       setInputText('');
@@ -73,7 +82,7 @@ const ChatInterface = () => {
               const retryMessage = { 
                 text: `Request taking longer than expected. Retrying (${retryCount}/${MAX_RETRIES})...`, 
                 isUser: false, 
-                time: "Just now",
+                time: new Date().toISOString(),
                 isStatus: true
               };
               setMessages(prevMessages => [...prevMessages, retryMessage]);
@@ -103,7 +112,7 @@ const ChatInterface = () => {
               const aiMessage = { 
                   text: response.message, 
                   isUser: false, 
-                  time: "Just now" 
+                  time: new Date().toISOString()
               };
               setMessages(prevMessages => [...prevMessages, aiMessage]);
             }
@@ -114,7 +123,7 @@ const ChatInterface = () => {
                 const toolMessage = {
                   text: `Tool Result: ${JSON.stringify(toolResult.result, null, 2)}`,
                   isUser: false,
-                  time: "Just now",
+                  time: new Date().toISOString(),
                   isToolResult: true
                 };
                 setMessages(prevMessages => [...prevMessages, toolMessage]);
@@ -130,7 +139,7 @@ const ChatInterface = () => {
           const errorResponse = { 
             text: errorText, 
             isUser: false, 
-            time: "Just now" 
+            time: new Date().toISOString()
           };
           setMessages(prevMessages => [...prevMessages, errorResponse]);
         }
@@ -149,7 +158,7 @@ const ChatInterface = () => {
         const errorResponse = { 
           text: errorMessageText, 
           isUser: false, 
-          time: "Just now" 
+          time: new Date().toISOString()
         };
         setMessages(prevMessages => [...prevMessages, errorResponse]);
       } finally {
@@ -166,45 +175,37 @@ const ChatInterface = () => {
   // Handler for email approval
   const handleEmailApprove = async (emailData) => {
     try {
-      // Create a new object with only the fields the backend expects
-      const emailPayload = {
-        recipient: emailData.recipient,
-        subject: emailData.subject,
-        body: emailData.body
-        // Don't include messageId, tone, or other unexpected fields
-      };
-      
-      // Send the approved email with only the required fields
-      const response = await approveAndSendEmail(emailPayload);
+      // Send the approved email
+      const response = await approveAndSendEmail(emailData);
       
       if (response.success) {
-        // Add success message to chat with icon
+        // Add success message to chat with icon and time
         const successMessage = { 
           text: `Email sent to ${emailData.recipient}`, 
           isUser: false, 
-          time: "Just now",
+          time: new Date().toISOString(),
           isEmailStatus: true,
           emailId: response.email_id,
           statusIcon: true,
-          recipient: emailData.recipient,  // Add this
-          subject: emailData.subject 
+          recipient: emailData.recipient,
+          subject: emailData.subject
         };
         setMessages(prevMessages => [...prevMessages, successMessage]);
       } else {
-        // Add error message to chat
+        // Add error message to chat with time
         const errorMessage = { 
           text: `Failed to send email: ${response.message}`, 
           isUser: false, 
-          time: "Just now" 
+          time: new Date().toISOString()
         };
         setMessages(prevMessages => [...prevMessages, errorMessage]);
       }
     } catch (error) {
-      // Handle error
+      // Handle error with time
       const errorMessage = { 
         text: "Failed to send email. Please try again.", 
         isUser: false, 
-        time: "Just now" 
+        time: new Date().toISOString()
       };
       setMessages(prevMessages => [...prevMessages, errorMessage]);
     } finally {
@@ -218,7 +219,7 @@ const ChatInterface = () => {
     const cancelMessage = { 
       text: 'Email composition cancelled', 
       isUser: false, 
-      time: "Just now" 
+      time: new Date().toISOString()
     };
     setMessages(prevMessages => [...prevMessages, cancelMessage]);
     
@@ -297,16 +298,16 @@ const ChatInterface = () => {
                   <div className="message-bubble">
                     {message.text}
                     {message.statusIcon && (
-                    <button 
-                      className="email-view-icon" 
-                      onClick={() => fetchEmailContent(message.emailId, message.recipient, message.subject)}
-                      title="View email content"
-                    >
-                      <i className="fas fa-envelope"></i>
-                    </button>
-                  )}
+                      <button 
+                        className="email-view-icon" 
+                        onClick={() => fetchEmailContent(message.emailId, message.recipient, message.subject)}
+                        title="View email content"
+                      >
+                        <i className="fas fa-envelope"></i>
+                      </button>
+                    )}
                   </div>
-                  <span className="message-time">{message.time}</span>
+                  <span className="message-time">{message.time ? formatTime(message.time) : "Just now"}</span>
                 </div>
               ))}
 

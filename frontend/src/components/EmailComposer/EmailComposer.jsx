@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './EmailComposer.css';
+import { formatTime } from '../../utils/timeUtils';
 
 const EmailComposer = ({
   emailData,
