@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.auth import get_current_user
 from app.admin import require_admin
 from sqlalchemy.orm import Session
-from app.models import EmailHistory
+from app.models import EmailHistory, EmailNameMap
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 
@@ -40,8 +40,45 @@ class EmailToolsResponse(BaseModel):
     has_tool_calls: bool = False
     email_composition: Optional[EmailCompositionResponse] = None  # Add this field
 
+# Name-email mapping functions
+def lookup_email_by_name(name: str, user_id: int, db: Session) -> Optional[str]:
+    """Look up email address by name for a specific user"""
+    mapping = db.query(EmailNameMap).filter(
+        EmailNameMap.user_id == user_id,
+        EmailNameMap.name.ilike(name)
+    ).first()
+    
+    return mapping.email_address if mapping else None
 
+def add_name_email_mapping(name: str, email_address: str, user_id: int, db: Session):
+    """Add a new name-email mapping for a user"""
+    # Check if mapping already exists
+    existing = db.query(EmailNameMap).filter(
+        EmailNameMap.user_id == user_id,
+        EmailNameMap.name.ilike(name)
+    ).first()
+    
+    if existing:
+        # Update existing mapping
+        existing.email_address = email_address
+    else:
+        # Create new mapping
+        new_mapping = EmailNameMap(
+            user_id=user_id,
+            name=name,
+            email_address=email_address
+        )
+        db.add(new_mapping)
+    
+    db.commit()
 
+# Pydantic models for name-email mappings
+class NameEmailMapping(BaseModel):
+    name: str
+    email_address: str
+
+class EmailLookupRequest(BaseModel):
+    name: str
 
 @router.post("/chat", response_model=EmailToolsResponse)
 async def email_tools_chat(
@@ -67,8 +104,13 @@ async def email_tools_chat(
         
         print(f"Sending to AI client: {openai_messages}")
         
-        # Process with AI client
-        result = ai_client.chat_with_tools(openai_messages, request.tool_type)
+        # Process with AI client (pass user_id and db)
+        result = ai_client.chat_with_tools(
+            openai_messages, 
+            request.tool_type,
+            user_id=current_user.id,
+            db=db
+        )
         print(f"AI client result: {result}")
         
         # Store email history only if email was actually sent (has details)
@@ -116,9 +158,6 @@ async def email_tools_chat(
             has_tool_calls=False
         )
 
-
-
-
 @router.get("/tools/available")
 async def get_available_tools(
     current_user: User = Depends(get_current_user)
@@ -129,7 +168,6 @@ async def get_available_tools(
     return {
         "tools": email_tool_registry.get_tools()
     }
-
 
 @router.get("/admin/history", response_model=List[EmailHistoryResponse])
 async def get_email_history(
@@ -164,7 +202,49 @@ class EmailComposition(BaseModel):
     body: str
     composition_id: Optional[str] = None
 
+# Name-email mapping endpoints
+@router.post("/name-mappings")
+async def add_email_name_mapping(
+    mapping: NameEmailMapping,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Add or update a name-email mapping"""
+    try:
+        add_name_email_mapping(
+            name=mapping.name,
+            email_address=mapping.email_address,
+            user_id=current_user.id,
+            db=db
+        )
+        return {"success": True, "message": "Mapping added successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/name-mappings/{name}")
+async def get_email_by_name(
+    name: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Look up email address by name"""
+    email_address = lookup_email_by_name(name, current_user.id, db)
+    if email_address:
+        return {"success": True, "email_address": email_address}
+    else:
+        return {"success": False, "message": "No mapping found for this name"}
+
+@router.get("/name-mappings")
+async def get_all_name_mappings(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get all name-email mappings for the current user"""
+    mappings = db.query(EmailNameMap).filter(
+        EmailNameMap.user_id == current_user.id
+    ).all()
+    
+    return [{"name": m.name, "email_address": m.email_address} for m in mappings]
 
 # Add new endpoints
 @router.post("/approve-and-send")
@@ -207,9 +287,6 @@ async def approve_and_send_email(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-
-
 @router.post("/save-draft")
 async def save_email_draft(
     email_data: EmailComposition,
@@ -226,7 +303,6 @@ async def cancel_email_composition(
 ):
     # Implementation for canceling composition
     return {"success": True, "message": "Composition canceled"}
-
 
 # Add a new endpoint to get email content by ID
 @router.get("/email-content/{email_id}")

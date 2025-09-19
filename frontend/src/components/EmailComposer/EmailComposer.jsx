@@ -14,6 +14,8 @@ const EmailComposer = ({
   const [editedContent, setEditedContent] = useState(emailData.body);
   const [editedRecipient, setEditedRecipient] = useState(emailData.recipient);
   const [editedSubject, setEditedSubject] = useState(emailData.subject);
+  const [resolvingName, setResolvingName] = useState(false);
+  const [nameResolutionMessage, setNameResolutionMessage] = useState('');
   
   // Update local states when emailData changes
   useEffect(() => {
@@ -21,6 +23,51 @@ const EmailComposer = ({
     setEditedRecipient(emailData.recipient);
     setEditedSubject(emailData.subject);
   }, [emailData]);
+
+  // Check if recipient is a name (not an email) and try to resolve it
+  useEffect(() => {
+    const resolveNameToEmail = async () => {
+      // Check if the recipient looks like a name (not an email)
+      if (editedRecipient && !editedRecipient.includes('@')) {
+        setResolvingName(true);
+        setNameResolutionMessage(`Looking up email for ${editedRecipient}...`);
+        
+        try {
+          const response = await fetch(`/email-tools/name-mappings/${encodeURIComponent(editedRecipient)}`, {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          
+          const result = await response.json();
+          if (result.success) {
+            setEditedRecipient(result.email_address);
+            setNameResolutionMessage(`Resolved to: ${result.email_address}`);
+            
+            // Auto-update the email data
+            if (onEdit) onEdit({ 
+              ...emailData, 
+              recipient: result.email_address,
+              originalName: editedRecipient
+            });
+          } else {
+            setNameResolutionMessage('Name not found in your contacts. Please enter an email address.');
+          }
+        } catch (error) {
+          setNameResolutionMessage('Error looking up name. Please enter an email address.');
+        } finally {
+          setResolvingName(false);
+        }
+      } else {
+        setNameResolutionMessage('');
+      }
+    };
+    
+    // Only resolve if we're not in the middle of processing
+    if (!isProcessed) {
+      resolveNameToEmail();
+    }
+  }, [editedRecipient, isProcessed]);
 
   const handleContentChange = (e) => {
     const newContent = e.target.value;
@@ -66,8 +113,14 @@ const EmailComposer = ({
           type="text" 
           value={editedRecipient} 
           onChange={handleRecipientChange}
-          disabled={isProcessed}
+          disabled={isProcessed || resolvingName}
+          placeholder="Name or email address"
         />
+        {nameResolutionMessage && (
+          <div className="name-resolution-message">
+            {nameResolutionMessage}
+          </div>
+        )}
         </div>
       
         <div className="email-field">
@@ -92,7 +145,7 @@ const EmailComposer = ({
       
       {!isProcessed && (
       <div className="email-actions">
-          <button className="btn-approve" onClick={handleApprove}>
+          <button className="btn-approve" onClick={handleApprove} disabled={resolvingName}>
             Approve & Send
           </button>
           <button className="btn-cancel" onClick={onCancel}>

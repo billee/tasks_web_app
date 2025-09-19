@@ -45,3 +45,16 @@ class EmailHistory(Base):
     
     # Relationship to user
     user = relationship("User")
+
+class EmailNameMap(Base):
+    __tablename__ = "email_name_maps"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    name = Column(String, nullable=False)
+    email_address = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationship to user
+    user = relationship("User")
