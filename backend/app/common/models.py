@@ -23,7 +23,7 @@ class User(Base):
     email_name_maps = relationship("EmailNameMap", back_populates="user")
 
 class EmailHistory(Base):
-    __tablename__ = "email_history"
+    __tablename__ = "email_histories"
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
@@ -39,7 +39,7 @@ class EmailHistory(Base):
     user = relationship("User", back_populates="email_histories")
 
 class EmailNameMap(Base):
-    __tablename__ = "email_name_map"
+    __tablename__ = "email_name_maps"
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
