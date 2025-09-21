@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.auth import get_current_user
-from app.models import User, EmailNameMap
+from app.common.database import get_db
+from app.common.auth import get_current_user
+from app.common.models import User, EmailNameMap
 from pydantic import BaseModel
+from typing import Optional
 
 router = APIRouter()
 

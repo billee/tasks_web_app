@@ -1,6 +1,5 @@
 from typing import Dict, Any, List
 from pydantic import BaseModel
-from importlib import import_module
 
 class Tool(BaseModel):
     name: str
@@ -16,24 +15,46 @@ class ToolRegistry:
         
     def get_tools(self) -> List[Dict[str, Any]]:
         return [tool.dict() for tool in self.tools.values()]
-    
-    def load_all_tools(self):
-        """Dynamically load tools from all tool directories"""
-        tool_modules = [
-            "app.tools.send_email_tool.registry",
-            "app.tools.lookup_contact_tool.registry",
-            "app.tools.save_email_history_tool.registry",
-            "app.tools.add_contact_mapping_tool.registry"
-        ]
-        
-        for module_path in tool_modules:
-            try:
-                module = import_module(module_path)
-                if hasattr(module, 'register_tools'):
-                    module.register_tools(self)
-            except ImportError as e:
-                print(f"Could not import tool module {module_path}: {e}")
 
 # Create global registry instance
 tool_registry = ToolRegistry()
-tool_registry.load_all_tools()
+
+# Manually register all tools to avoid circular imports
+tool_registry.register_tool(Tool(
+    name="send_email",
+    description="Send an email to a specified email address with AI-generated content",
+    parameters={
+        "to_email": {"type": "string", "description": "Recipient email address"},
+        "subject": {"type": "string", "description": "Email subject"},
+        "content_request": {"type": "string", "description": "Description of email content"},
+        "tone": {"type": "string", "description": "Email tone (professional, friendly, casual)", "default": "professional"}
+    }
+))
+
+tool_registry.register_tool(Tool(
+    name="lookup_contact",
+    description="Look up an email address by contact name",
+    parameters={
+        "name": {"type": "string", "description": "Contact name to look up"}
+    }
+))
+
+tool_registry.register_tool(Tool(
+    name="save_email_history",
+    description="Save a record of a sent email to the history database",
+    parameters={
+        "recipient": {"type": "string", "description": "Email recipient"},
+        "subject": {"type": "string", "description": "Email subject"},
+        "content_preview": {"type": "string", "description": "Preview of email content"},
+        "email_id": {"type": "string", "description": "Unique identifier for the email", "optional": True}
+    }
+))
+
+tool_registry.register_tool(Tool(
+    name="add_contact_mapping",
+    description="Add or update a name-to-email mapping for a contact",
+    parameters={
+        "name": {"type": "string", "description": "Contact name"},
+        "email_address": {"type": "string", "description": "Email address for the contact"}
+    }
+))

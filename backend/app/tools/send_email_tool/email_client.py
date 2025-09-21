@@ -4,6 +4,8 @@ import requests
 from typing import Dict, Any, Optional
 from dotenv import load_dotenv
 from pathlib import Path
+from ...common.database import get_db
+from ...common.models import EmailHistory
 
 # Load environment variables from root directory
 root_dir = Path(__file__).parent.parent.parent

@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.auth import get_current_user, require_admin
-from app.models import User, EmailHistory
-from app.schemas import EmailHistoryResponse
+from app.common.database import get_db
+from app.common.auth import get_current_user, require_admin
+from app.common.models import User, EmailHistory
+from app.common.schemas import EmailHistoryResponse
 from typing import List
 
 router = APIRouter()

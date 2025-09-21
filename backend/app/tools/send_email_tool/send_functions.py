@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.database import get_db
-from app.auth import get_current_user
-from app.models import User, EmailHistory
-from app.email_client import email_client
+from app.common.database import get_db
+from app.common.auth import get_current_user
+from app.common.models import User, EmailHistory
+from .email_client import email_client
 from pydantic import BaseModel
+from typing import Optional
 
 router = APIRouter()
 
@@ -21,6 +22,9 @@ async def approve_and_send_email(
     db: Session = Depends(get_db)
 ):
     try:
+        print(f"Approve and send request received from user: {current_user.email}")
+        print(f"Email data: {email_data}")
+        
         html_content = email_client.format_email_html(email_data.body)
         result = email_client.send_email(
             to_email=email_data.recipient,

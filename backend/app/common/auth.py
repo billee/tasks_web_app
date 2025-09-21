@@ -1,24 +1,26 @@
+import os
 from datetime import datetime, timedelta
 from typing import Optional
+from jose import JWTError, jwt
 from sqlalchemy.orm import Session
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from jose import JWTError, jwt
+
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
-from app.database import get_db
-from app.models import User
+from app.common.database import get_db
+from app.common.models import User
+import app.common.models as models 
 
 # Configuration
-import os
+
 from dotenv import load_dotenv
 from pathlib import Path
 
 # Load environment variables from root directory
 # Get the root directory (two levels up from this file)
-root_dir = Path(__file__).parent.parent.parent
+root_dir = Path(__file__).parent.parent.parent.parent
 env_path = root_dir / ".env"
 load_dotenv(dotenv_path=str(env_path))
 
@@ -33,7 +35,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # OAuth2 scheme
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Pydantic models
 class Token(BaseModel):
@@ -88,11 +90,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
-        token_data = TokenData(email=email)
     except JWTError:
         raise credentials_exception
         
-    user = db.query(User).filter(User.email == token_data.email).first()
+    user = db.query(models.User).filter(models.User.email == email).first()
     if user is None:
         raise credentials_exception
     return user

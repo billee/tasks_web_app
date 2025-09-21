@@ -1,12 +1,13 @@
-# backend/app/ai_client.py
+# backend/app/core/ai_client.py
 from openai import OpenAI
 import json
 import os
+import re
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 from pathlib import Path
 
-from app.email_client import email_client
+from app.tools.send_email_tool.email_client import email_client
 
 # Load environment variables from root directory
 root_dir = Path(__file__).parent.parent.parent
@@ -27,7 +28,6 @@ class AIClient:
             
         self.enabled = True
         self.client = OpenAI(api_key=self.openai_api_key)
-        # openai.api_key = self.openai_api_key
         self.model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
         
         # Email tools definition
@@ -183,7 +183,8 @@ class AIClient:
         """
         Tool function to look up email by name
         """
-        from app.email_tools import lookup_email_by_name
+        # Import from the correct path
+        from app.tools.lookup_contact_tool.lookup_functions import lookup_email_by_name
         email_address = lookup_email_by_name(name, user_id, db)
         
         if email_address:
@@ -205,7 +206,8 @@ class AIClient:
         """
         Tool function to add a name-email mapping
         """
-        from app.email_tools import add_name_email_mapping
+        # Import from the correct path
+        from app.tools.add_contact_mapping_tool.mapping_functions import add_name_email_mapping
         
         try:
             add_name_email_mapping(name, email_address, user_id, db)
@@ -268,14 +270,6 @@ class AIClient:
                 "success": False,
                 "message": f"Unknown tool: {function_name}"
             }
-    
-
-
-
-
-
-
-    # ... (previous code remains the same until the chat_with_tools method)
 
     def chat_with_tools(self, messages: List[Dict[str, str]], tool_type: str = "email", 
                     user_id: int = None, db = None) -> Dict[str, Any]:
@@ -305,7 +299,6 @@ class AIClient:
                     "I couldn't find an email address for" in last_ai_message.get("content", "") and
                     "in your contacts" in last_ai_message.get("content", "")):
                     # Extract the name from the AI message
-                    import re
                     match = re.search(r"for (.+?) in your contacts", last_ai_message.get("content", ""))
                     if match:
                         pending_name = match.group(1)
@@ -315,8 +308,8 @@ class AIClient:
                             # This is an email address response to a missing name
                             email_address = last_user_message["content"]
                             
-                            # Add the name-email mapping
-                            from app.email_tools import add_name_email_mapping
+                            # Add the name-email mapping (using the correct import)
+                            from app.tools.add_contact_mapping_tool.mapping_functions import add_name_email_mapping
                             add_name_email_mapping(pending_name, email_address, user_id, db)
                             
                             # Extract email details from the original request
@@ -565,14 +558,8 @@ class AIClient:
 
     def is_valid_email(self, email):
         """Simple email validation function"""
-        import re
         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         return re.match(pattern, email) is not None
-
-
-
-
-
 
     def regular_chat(self, messages: List[Dict[str, str]]) -> str:
         """
