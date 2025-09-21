@@ -23,36 +23,85 @@ export const emailToolsChat = async (messages, toolType = 'email') => {
 };
 
 export const getAvailableTools = async () => {
-  const response = await api.get('/email-tools/tools/available');
-  return response.data;
+  try {
+    const response = await api.get('/email-tools/tools/available');
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 401) {
+      throw new Error('Please login again');
+    }
+    throw error;
+  }
 };
 
 export const getEmailHistory = async () => {
+  try {
     const response = await api.get('/email-tools/history');
     return response;
+  } catch (error) {
+    if (error.response?.status === 401) {
+      throw new Error('Please login again');
+    }
+    throw error;
+  }
 };
 
 export const getAdminEmailHistory = async () => {
+  try {
     const response = await api.get('/email-tools/admin/history');
     return response;
+  } catch (error) {
+    if (error.response?.status === 401) {
+      throw new Error('Please login again');
+    }
+    throw error;
+  }
 };
 
 export const approveAndSendEmail = async (emailData) => {
+  try {
   const response = await api.post('/email-tools/approve-and-send', emailData);
   return response.data;
+  } catch (error) {
+    if (error.response?.status === 401) {
+      throw new Error('Please login again');
+    }
+    throw error;
+  }
 };
 
 export const saveEmailDraft = async (emailData) => {
+  try {
   const response = await api.post('/email-tools/save-draft', emailData);
   return response.data;
+  } catch (error) {
+    if (error.response?.status === 401) {
+      throw new Error('Please login again');
+    }
+    throw error;
+  }
 };
 
 export const cancelEmailComposition = async (compositionId) => {
+  try {
   const response = await api.delete(`/email-tools/cancel-composition/${compositionId}`);
   return response.data;
+  } catch (error) {
+    if (error.response?.status === 401) {
+      throw new Error('Please login again');
+    }
+    throw error;
+  }
 };
 
 export const getEmailContent = async (emailId) => {
+  try {
   const response = await api.get(`/email-tools/email-content/${emailId}`);
   return response.data;
+  } catch (error) {
+    if (error.response?.status === 401) {
+      throw new Error('Please login again');
+    }
+    throw error;
+  }
 };

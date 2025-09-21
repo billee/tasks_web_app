@@ -106,7 +106,17 @@ export const authService = {
 
   // Check if user is authenticated
   isAuthenticated() {
-    return !!localStorage.getItem('authToken');
+    const token = localStorage.getItem('authToken');
+    if (!token) return false;
+    
+    // Check if token is expired (JWT tokens have exp field)
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Date.now() / 1000;
+      return payload.exp > currentTime;
+    } catch (e) {
+      return false; // Invalid token format
+    }
   },
 
   // Check if user is admin
@@ -117,5 +127,18 @@ export const authService = {
   // Get stored token
   getToken() {
     return localStorage.getItem('authToken');
+  },
+  
+  // Get token expiration time
+  getTokenExpiration() {
+    const token = this.getToken();
+    if (!token) return null;
+    
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.exp * 1000; // Convert to milliseconds
+    } catch (e) {
+      return null;
+    }
   }
 };
