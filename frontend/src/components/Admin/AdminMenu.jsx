@@ -6,6 +6,7 @@ const AdminMenu = () => {
   const location = useLocation();
   
   const menuItems = [
+    { path: '/admin/dashboard', label: 'Dashboard', icon: 'fas fa-tachometer-alt' },
     { path: '/admin/users', label: 'User Management', icon: 'fas fa-users' },
     { path: '/admin/email-history', label: 'Email History', icon: 'fas fa-envelope' },
     // Add more admin menu items as needed

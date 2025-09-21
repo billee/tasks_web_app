@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import './AdminDashboard.css';
 import { authService } from '../../services/auth';
 import { adminService } from '../../services/admin';
-import EmailHistory from './EmailHistory'; // Import the EmailHistory component
+import EmailHistory from './EmailHistory';
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -14,29 +14,23 @@ const AdminDashboard = () => {
     name: ''
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('users'); // Default to users tab
 
   useEffect(() => {
-    // Fetch users from the API
     const fetchUsers = async () => {
       try {
-        // Fetch real users from the backend
         const usersData = await adminService.getUsers();
         setUsers(usersData);
           
-        // Get current user info from the API
         try {
           const currentUserData = await adminService.getCurrentUser();
           setCurrentUser(currentUserData);
         } catch (currentUserError) {
           console.error('Failed to fetch current user, using localStorage fallback:', currentUserError);
         
-          // Fallback to localStorage if API call fails
         const userEmail = localStorage.getItem('userEmail');
           const userName = localStorage.getItem('userName') || 'Administrator';
         
         if (userEmail) {
-          // Try to find the user in the users list, or create a mock current user
             const currentUserData = usersData.find(user => user.email === userEmail) || 
                                   { 
                                     email: userEmail, 
@@ -48,7 +42,6 @@ const AdminDashboard = () => {
                                   };
           setCurrentUser(currentUserData);
         } else {
-            // Final fallback for demonstration
           setCurrentUser({ 
             email: 'admin@example.com', 
             name: userName,
@@ -73,13 +66,9 @@ const AdminDashboard = () => {
   const handleCreateUser = async (e) => {
     e.preventDefault();
     try {
-      // Call the backend API to create a user
       const createdUser = await adminService.createUser(newUser);
-      
-      // Add the new user to the local state
       setUsers([...users, createdUser]);
       setNewUser({ email: '', password: '', name: '' });
-      
       alert('User created successfully!');
     } catch (error) {
       console.error('Failed to create user:', error);
@@ -89,14 +78,10 @@ const AdminDashboard = () => {
 
   const handleDeactivate = async (userId) => {
     try {
-      // Call the backend API to deactivate a user
       const updatedUser = await adminService.deactivateUser(userId);
-      
-      // Update the user in the local state
       setUsers(users.map(user => 
         user.id === userId ? updatedUser : user
       ));
-      
       alert('User deactivated successfully!');
     } catch (error) {
       console.error('Failed to deactivate user:', error);
@@ -107,8 +92,6 @@ const AdminDashboard = () => {
   const handleLogout = async () => {
     try {
       console.log('Logging out...');
-      
-      // Use the authService logout method which calls the backend
       const result = await authService.logout();
       
       if (result.success) {
@@ -117,28 +100,21 @@ const AdminDashboard = () => {
         console.log('Logout had issues but local session cleared:', result.error);
       }
       
-      // Force a page reload to redirect to login page
       window.location.reload();
-      
     } catch (error) {
       console.error('Logout failed:', error);
-      
-      // Fallback: clear localStorage directly and reload
       localStorage.removeItem('authToken');
       localStorage.removeItem('userEmail');
       localStorage.removeItem('userName');
       localStorage.removeItem('isAdmin');
-      
       window.location.reload();
     }
   };
 
-  // Helper function to get user initials from name or email
   const getUserInitials = (user) => {
     if (!user) return 'A';
     
     if (user.name) {
-      // If we have a name, use the first letter of each word
       const nameParts = user.name.split(' ');
       if (nameParts.length >= 2) {
         return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
@@ -146,7 +122,6 @@ const AdminDashboard = () => {
       return user.name.substring(0, 2).toUpperCase();
     }
     
-    // Fallback to email if no name
     const parts = user.email.split('@')[0].split('.');
     if (parts.length >= 2) {
       return (parts[0][0] + parts[1][0]).toUpperCase();
@@ -154,34 +129,67 @@ const AdminDashboard = () => {
     return user.email.substring(0, 2).toUpperCase();
   };
 
-  // Helper function to get display name
   const getDisplayName = (user) => {
     if (!user) return 'Administrator';
     
-    // Use the name if available, otherwise fall back to email processing
     if (user.name) {
       return user.name;
     }
     
-    // Fallback to processing email if no name
     const username = user.email.split('@')[0];
     return username.split('.').map(part => 
       part.charAt(0).toUpperCase() + part.slice(1)
     ).join(' ');
   };
 
-  // Calculate stats
   const activeUsers = users.filter(user => user.is_active).length;
   const inactiveUsers = users.filter(user => !user.is_active).length;
 
-  // Render content based on active tab
-  const renderTabContent = () => {
-    switch(activeTab) {
-      case 'emailHistory':
-        return <EmailHistory />;
-      case 'users':
+  if (isLoading) return <div className="admin-dashboard-loading">Loading...</div>;
+
   return (
-          <>
+    <div className="admin-dashboard">
+      <header className="admin-dashboard-header">
+        <div className="admin-dashboard-logo-section">
+          <div className="admin-dashboard-logo">A</div>
+          <div className="admin-dashboard-logo-text">Admin Dashboard</div>
+        </div>
+        
+        <div className="admin-dashboard-profile">
+          <div className="admin-dashboard-profile-info">
+            <div className="admin-dashboard-name">
+              {currentUser ? getDisplayName(currentUser) : 'Administrator'}
+            </div>
+            <div className="admin-dashboard-role">Administrator</div>
+          </div>
+          <div className="admin-dashboard-profile-avatar">
+            {currentUser ? getUserInitials(currentUser) : 'A'}
+          </div>
+          <button className="admin-dashboard-logout-btn" onClick={handleLogout}>
+            Log Out
+          </button>
+        </div>
+      </header>
+
+      <div className="admin-dashboard-content">
+        <div className="admin-dashboard-stats">
+          <h2>Quick Stats</h2>
+          <div className="admin-dashboard-stats-grid">
+            <div className="admin-dashboard-stat-card">
+              <div className="admin-dashboard-stat-number">{users.length}</div>
+              <div className="admin-dashboard-stat-label">Total Users</div>
+            </div>
+            <div className="admin-dashboard-stat-card">
+              <div className="admin-dashboard-stat-number">{activeUsers}</div>
+              <div className="admin-dashboard-stat-label">Active Users</div>
+            </div>
+            <div className="admin-dashboard-stat-card">
+              <div className="admin-dashboard-stat-number">{inactiveUsers}</div>
+              <div className="admin-dashboard-stat-label">Inactive Users</div>
+            </div>
+          </div>
+        </div>
+
       <div className="admin-dashboard-users-list">
         <h2>Existing Users</h2>
         <table>
@@ -266,92 +274,9 @@ const AdminDashboard = () => {
             <button type="submit">Create User</button>
           </form>
         </div>
-          </>
-        );
-      case 'stats':
-        return (
-          <div className="admin-dashboard-stats">
-            <h2>Quick Stats</h2>
-            <div className="admin-dashboard-stats-grid">
-              <div className="admin-dashboard-stat-card">
-                <div className="admin-dashboard-stat-number">{users.length}</div>
-                <div className="admin-dashboard-stat-label">Total Users</div>
-              </div>
-              <div className="admin-dashboard-stat-card">
-                <div className="admin-dashboard-stat-number">{activeUsers}</div>
-                <div className="admin-dashboard-stat-label">Active Users</div>
-              </div>
-              <div className="admin-dashboard-stat-card">
-                <div className="admin-dashboard-stat-number">{inactiveUsers}</div>
-                <div className="admin-dashboard-stat-label">Inactive Users</div>
-              </div>
-            </div>
-          </div>
-        );
-      default:
-        return <div>Select a tab</div>;
-    }
-  };
-
-  if (isLoading) return <div className="admin-dashboard-loading">Loading...</div>;
-
-  return (
-    <div className="admin-dashboard">
-      {/* Sticky Header */}
-      <header className="admin-dashboard-header">
-        <div className="admin-dashboard-logo-section">
-          <div className="admin-dashboard-logo">A</div>
-          <div className="admin-dashboard-logo-text">Admin Dashboard</div>
-        </div>
-        
-        <div className="admin-dashboard-profile">
-          <div className="admin-dashboard-profile-info">
-            <div className="admin-dashboard-name">
-              {currentUser ? getDisplayName(currentUser) : 'Administrator'}
-            </div>
-            <div className="admin-dashboard-role">Administrator</div>
-          </div>
-          <div className="admin-dashboard-profile-avatar">
-            {currentUser ? getUserInitials(currentUser) : 'A'}
-          </div>
-          <button className="admin-dashboard-logout-btn" onClick={handleLogout}>
-            Log Out
-          </button>
-        </div>
-      </header>
-
-      {/* Horizontal Menu */}
-      <div className="admin-dashboard-menu">
-        <button 
-          className={`admin-dashboard-menu-item ${activeTab === 'emailHistory' ? 'active' : ''}`}
-          onClick={() => setActiveTab('emailHistory')}
-        >
-          <i className="fas fa-envelope"></i>
-          Email Histories
-        </button>
-        <button 
-          className={`admin-dashboard-menu-item ${activeTab === 'users' ? 'active' : ''}`}
-          onClick={() => setActiveTab('users')}
-        >
-          <i className="fas fa-users"></i>
-          Users
-        </button>
-        <button 
-          className={`admin-dashboard-menu-item ${activeTab === 'stats' ? 'active' : ''}`}
-          onClick={() => setActiveTab('stats')}
-        >
-          <i className="fas fa-chart-bar"></i>
-          Quick Stats
-        </button>
-      </div>
-
-      {/* Main Dashboard Content */}
-      <div className="admin-dashboard-content">
-        {renderTabContent()}
       </div>
     </div>
   );
 };
 
 export default AdminDashboard;
-

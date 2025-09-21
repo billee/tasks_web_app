@@ -8,7 +8,7 @@ import AdminDashboard from './components/Admin/AdminDashboard';
 import UserManagement from './components/Admin/UserManagement';
 import RegistrationRequests from './components/Admin/RegistrationRequests';
 import AdminEmailHistory from './components/Admin/EmailHistory';
-import AdminMenu from './components/AdminMenu/AdminMenu';
+import AdminLayout from './components/Admin/AdminLayout';
 import './App.css';
 
 function App() {
@@ -30,18 +30,12 @@ function App() {
           {/* Admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
             path="/admin/dashboard" 
             element={
               <ProtectedRoute requireAdmin={true}>
+                <AdminLayout>
                 <AdminDashboard />
+                </AdminLayout>
               </ProtectedRoute>
             } 
           />
@@ -49,7 +43,9 @@ function App() {
             path="/admin/users" 
             element={
               <ProtectedRoute requireAdmin={true}>
+                <AdminLayout>
                 <UserManagement />
+                </AdminLayout>
               </ProtectedRoute>
             } 
           />
@@ -57,12 +53,26 @@ function App() {
             path="/admin/requests" 
             element={
               <ProtectedRoute requireAdmin={true}>
+                <AdminLayout>
                 <RegistrationRequests />
+                </AdminLayout>
               </ProtectedRoute>
             } 
           />
-          <Route path="/admin/email-history" element={<AdminEmailHistory />} />
-
+          <Route 
+            path="/admin/email-history" 
+            element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminLayout>
+                  <AdminEmailHistory />
+                </AdminLayout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin" 
+            element={<Navigate to="/admin/dashboard" replace />} 
+          />
         </Routes>
       </div>
     </Router>

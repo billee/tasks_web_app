@@ -6,17 +6,20 @@ from dotenv import load_dotenv
 # Import routers
 from app.auth import router as auth_router
 from app import models
-from app.database import engine  # Use the engine from database.py
+from app.database import engine
 from app.admin import router as admin_router
-from app.email_tools import router as email_tools_router  # ADD THIS LINE
+
+# Import individual tool routers
+from app.tools.send_email_tool.router import router as send_email_router
+from app.tools.lookup_contact_tool.router import router as lookup_contact_router
+from app.tools.save_email_history_tool.router import router as save_history_router
+from app.tools.add_contact_mapping_tool.router import router as contact_mapping_router
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
 
 # Load environment variables from root directory
 from pathlib import Path
-
-
 
 # Get the root directory (two levels up from this file)
 root_dir = Path(__file__).parent.parent.parent
@@ -43,7 +46,12 @@ app.add_middleware(
 # Include routers
 app.include_router(auth_router)
 app.include_router(admin_router)
-app.include_router(email_tools_router)  # ADD THIS LINE
+
+# Include individual tool routers with appropriate prefixes
+app.include_router(send_email_router, prefix="/email-tools")
+app.include_router(lookup_contact_router, prefix="/email-tools")
+app.include_router(save_history_router, prefix="/email-tools")
+app.include_router(contact_mapping_router, prefix="/email-tools")
 
 # Basic health check endpoint
 @app.get("/")
