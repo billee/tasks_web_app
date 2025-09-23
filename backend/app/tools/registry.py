@@ -58,3 +58,18 @@ tool_registry.register_tool(Tool(
         "email_address": {"type": "string", "description": "Email address for the contact"}
     }
 ))
+
+
+tool_registry.register_tool(Tool(
+    name="read_gmail_inbox",
+    description="Read the user's Gmail inbox to check for new emails, view recent messages, or monitor incoming mail. Use this when the user asks to read their inbox, check emails, or see recent messages.",
+    parameters={
+        "max_results": {
+            "type": "integer", 
+            "description": "Maximum number of emails to return (default: 10, max: 50)",
+            "default": 10,
+            "optional": True
+        }
+    }
+))
+
