@@ -521,7 +521,7 @@
   justify-content: space-between;
   padding: 10px 15px;
   border-radius: 18px;
-  max-width: 70%;
+  /* max-width: 70%; */
   word-wrap: break-word;
 }
 

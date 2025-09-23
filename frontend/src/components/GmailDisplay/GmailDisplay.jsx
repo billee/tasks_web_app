@@ -7,6 +7,24 @@ const GmailDisplay = ({ emails, onEmailClick }) => {
     return null;
   }
 
+  const handleReplyClick = (email, e) => {
+    e.stopPropagation(); // Prevent triggering the email click
+    console.log('Reply to email:', email);
+    // Reply functionality will be added later
+  };
+
+  const handleCategorizeClick = (email, e) => {
+    e.stopPropagation(); // Prevent triggering the email click
+    console.log('Categorize email:', email);
+    // Categorize functionality will be added later
+  };
+
+  const handleRemoveClick = (email, e) => {
+    e.stopPropagation(); // Prevent triggering the email click
+    console.log('Remove email:', email);
+    // Remove functionality will be added later
+  };
+
   return (
     <div className="gmail-display">
       <div className="gmail-header">
@@ -20,10 +38,37 @@ const GmailDisplay = ({ emails, onEmailClick }) => {
             className="email-item"
             onClick={() => onEmailClick && onEmailClick(email)}
           >
+            <div className="email-content">
+              <div className="email-info">
             <div className="email-sender">{email.from_address}</div>
             <div className="email-subject">{email.subject || '(No subject)'}</div>
             <div className="email-snippet">{email.snippet}</div>
             <div className="email-date">{formatTime(email.date)}</div>
+          </div>
+              <div className="email-actions">
+                <button 
+                  className="email-action-btn reply-btn"
+                  onClick={(e) => handleReplyClick(email, e)}
+                  title="Reply"
+                >
+                  <i className="fas fa-reply"></i>
+                </button>
+                <button 
+                  className="email-action-btn categorize-btn"
+                  onClick={(e) => handleCategorizeClick(email, e)}
+                  title="Categorize"
+                >
+                  <i className="fas fa-tag"></i>
+                </button>
+                <button 
+                  className="email-action-btn remove-btn"
+                  onClick={(e) => handleRemoveClick(email, e)}
+                  title="Remove"
+                >
+                  <i className="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
           </div>
         ))}
       </div>
