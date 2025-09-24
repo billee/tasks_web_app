@@ -17,3 +17,25 @@ class GmailReadResponse(BaseModel):
     message: str
     emails: List[GmailEmail]
     count: int
+
+class GmailReplyRequest(BaseModel):
+    original_message_id: str
+    reply_content: str
+    subject: str
+    to_address: str
+
+class GmailReplyResponse(BaseModel):
+    success: bool
+    message: str
+    message_id: Optional[str] = None
+    thread_id: Optional[str] = None
+
+class GmailEmailDetails(BaseModel):
+    id: str
+    subject: str
+    from_address: str
+    date: str
+    snippet: str
+    body: str
+    thread_id: Optional[str] = None
+    headers: Dict[str, str]

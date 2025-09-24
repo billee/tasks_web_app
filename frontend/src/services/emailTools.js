@@ -119,3 +119,18 @@ export const readGmailInbox = async (maxResults = 10) => {
     throw error;
   }
 };
+
+
+export const archiveGmailEmail = async (messageId) => {
+  try {
+    const response = await api.post('/email-tools/archive-email', {
+      message_id: messageId
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 401) {
+      throw new Error('Please login again');
+    }
+    throw error;
+  }
+};

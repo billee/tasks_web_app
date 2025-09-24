@@ -12,7 +12,11 @@ from googleapiclient.errors import HttpError
 
 class GmailClient:
     def __init__(self):
-        self.SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+        # Add modify scope for archiving
+        self.SCOPES = [
+            'https://www.googleapis.com/auth/gmail.readonly',
+            'https://www.googleapis.com/auth/gmail.modify'  # Add this for archiving
+        ]
         self.service = None
         
         # Get the correct path - tokens should be in the same directory as credentials.json
@@ -24,6 +28,7 @@ class GmailClient:
         """Check if Gmail API is configured"""
         return os.path.exists(self.credentials_path)
         
+
     def authenticate(self, user_id):
         """Authenticate with Gmail API for a specific user"""
         # Check if credentials file exists
@@ -49,10 +54,24 @@ class GmailClient:
                 print("Found existing token file, loading...")
                 creds = Credentials.from_authorized_user_file(token_path, self.SCOPES)
                 print("Token loaded successfully")
+                
+                # Check if token has the required scopes
+                if creds and creds.valid:
+                    token_scopes = creds.scopes if creds.scopes else []
+                    required_scopes = set(self.SCOPES)
+                    current_scopes = set(token_scopes)
+                    
+                    if not required_scopes.issubset(current_scopes):
+                        print(f"Token missing required scopes. Required: {required_scopes}, Current: {current_scopes}")
+                        print("Deleting token to force re-authentication with new scopes...")
+                        os.remove(token_path)
+                        creds = None
+                        
             except Exception as e:
                 print(f"Error loading token: {e}")
                 # Remove invalid token file
-                os.remove(token_path)
+                if os.path.exists(token_path):
+                    os.remove(token_path)
                 creds = None
         
         if not creds or not creds.valid:
@@ -63,8 +82,12 @@ class GmailClient:
                     print("Token refreshed successfully")
                 except Exception as e:
                     print(f"Error refreshing token: {e}")
+                    # Remove invalid token file and force re-authentication
+                    if os.path.exists(token_path):
+                        os.remove(token_path)
                     creds = None
-            else:
+            
+            if not creds:
                 try:
                     print(f"Starting new authentication flow...")
                     print(f"Using credentials file at: {self.credentials_path}")
@@ -80,15 +103,23 @@ class GmailClient:
                         detail=f"Failed to authenticate with Gmail: {str(e)}"
                     )
             
-            # Save the credentials for the next run
-            print(f"Saving token to: {token_path}")
-            with open(token_path, 'w') as token:
-                token.write(creds.to_json())
-            print("Token saved successfully")
+            # Save the credentials for the next run (only if we have valid creds)
+            if creds:
+                print(f"Saving token to: {token_path}")
+                with open(token_path, 'w') as token:
+                    token.write(creds.to_json())
+                print("Token saved successfully")
+            else:
+                raise HTTPException(
+                    status_code=500, 
+                    detail="Failed to obtain valid credentials after authentication attempt"
+                )
         
         self.service = build('gmail', 'v1', credentials=creds)
         return self.service
-        
+
+
+
     def get_inbox_emails(self, max_results=10):
         """Get emails from inbox"""
         if not self.service:
@@ -121,7 +152,8 @@ class GmailClient:
                     'snippet': msg.get('snippet', ''),
                     'subject': '',
                     'from': '',
-                    'date': ''
+                    'date': '',
+                    'threadId': msg.get('threadId')  # Add threadId for archiving
                 }
                 
                 for header in headers:
@@ -140,3 +172,35 @@ class GmailClient:
         except HttpError as error:
             print(f'Gmail API error occurred: {error}')
             return []
+
+    def archive_email(self, message_id):
+        """Archive an email by removing the INBOX label"""
+        if not self.service:
+            raise Exception("Gmail service not initialized. Call authenticate() first.")
+            
+        try:
+            # Remove the 'INBOX' label to archive the email
+            # This moves it to "All Mail" but removes it from inbox
+            body = {
+                'removeLabelIds': ['INBOX']
+            }
+            
+            result = self.service.users().messages().modify(
+                userId='me',
+                id=message_id,
+                body=body
+            ).execute()
+            
+            print(f"Email {message_id} archived successfully")
+            return {
+                "success": True,
+                "message": "Email archived successfully",
+                "archived_email": result
+            }
+            
+        except HttpError as error:
+            print(f'Gmail API error occurred while archiving: {error}')
+            return {
+                "success": False,
+                "message": f"Failed to archive email: {str(error)}"
+            }

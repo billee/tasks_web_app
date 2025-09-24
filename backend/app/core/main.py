@@ -1,7 +1,6 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-from app.tools.chat_router import router as chat_router
 
 # Get the root directory (three levels up from this file)
 root_dir = Path(__file__).parent.parent.parent
@@ -24,13 +23,19 @@ from app.tools.save_email_history_tool.router import router as save_history_rout
 from app.tools.add_contact_mapping_tool.router import router as contact_mapping_router
 from app.tools.chat_router import router as chat_router
 
+# Import read_gmail_router with error handling
+try:
+    from app.tools.read_gmail_tool.router import router as read_gmail_router
+    READ_GMAIL_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Could not import read_gmail_tool router: {e}")
+    READ_GMAIL_AVAILABLE = False
+    # Create a dummy router for read_gmail_router
+    from fastapi import APIRouter
+    read_gmail_router = APIRouter()
+
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
-
-# Load environment variables from root directory
-from pathlib import Path
-
-
 
 print(f"OpenAI API Key: {os.getenv('OPENAI_API_KEY') is not None}")
 print(f"Resend API Key: {os.getenv('RESEND_API_KEY') is not None}")
@@ -59,6 +64,15 @@ app.include_router(send_email_router, prefix="/email-tools")
 app.include_router(lookup_contact_router, prefix="/email-tools")
 app.include_router(save_history_router, prefix="/email-tools")
 app.include_router(contact_mapping_router, prefix="/email-tools")
+
+# Only include read_gmail_router if it's available
+if READ_GMAIL_AVAILABLE:
+    app.include_router(read_gmail_router, prefix="/email-tools", tags=["email-tools"])
+else:
+    # Add a placeholder endpoint for read_gmail_tool
+    @app.get("/email-tools/test-gmail")
+    async def test_gmail_endpoint():
+        return {"message": "Gmail tool is not available due to import errors"}
 
 # Basic health check endpoint
 @app.get("/")

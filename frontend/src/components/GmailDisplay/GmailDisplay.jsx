@@ -1,28 +1,42 @@
 import React from 'react';
 import './GmailDisplay.css';
 import { formatTime } from '../../utils/timeUtils';
+import { archiveGmailEmail } from '../../services/emailTools';
 
-const GmailDisplay = ({ emails, onEmailClick }) => {
+const GmailDisplay = ({ emails, onEmailClick, onEmailArchived }) => {
   if (!emails || emails.length === 0) {
     return null;
   }
 
   const handleReplyClick = (email, e) => {
-    e.stopPropagation(); // Prevent triggering the email click
+    e.stopPropagation();
     console.log('Reply to email:', email);
-    // Reply functionality will be added later
   };
 
   const handleCategorizeClick = (email, e) => {
-    e.stopPropagation(); // Prevent triggering the email click
+    e.stopPropagation();
     console.log('Categorize email:', email);
-    // Categorize functionality will be added later
   };
 
-  const handleRemoveClick = (email, e) => {
-    e.stopPropagation(); // Prevent triggering the email click
-    console.log('Remove email:', email);
-    // Remove functionality will be added later
+  const handleArchiveClick = async (email, e) => {
+    e.stopPropagation();
+    try {
+      console.log('Archiving email:', email);
+      const result = await archiveGmailEmail(email.id);
+      
+      if (result.success) {
+        console.log('Email archived successfully');
+        // Notify parent component to update the email list
+        if (onEmailArchived) {
+          onEmailArchived(email.id);
+        }
+      } else {
+        console.error('Failed to archive email:', result.message);
+        // You might want to show an error message to the user
+      }
+    } catch (error) {
+      console.error('Error archiving email:', error);
+    }
   };
 
   return (
@@ -61,11 +75,11 @@ const GmailDisplay = ({ emails, onEmailClick }) => {
                   <i className="fas fa-tag"></i>
                 </button>
                 <button 
-                  className="email-action-btn remove-btn"
-                  onClick={(e) => handleRemoveClick(email, e)}
-                  title="Remove"
+                  className="email-action-btn archive-btn"
+                  onClick={(e) => handleArchiveClick(email, e)}
+                  title="Archive"
                 >
-                  <i className="fas fa-trash"></i>
+                  <i className="fas fa-archive"></i>
                 </button>
               </div>
             </div>

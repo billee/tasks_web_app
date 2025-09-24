@@ -300,6 +300,27 @@ const ChatInterface = () => {
     }
   };
 
+  const handleEmailArchived = (emailId) => {
+    // Remove the archived email from the current message's email list
+    setMessages(prevMessages => 
+      prevMessages.map(msg => {
+        if (msg.gmailEmails) {
+          const updatedEmails = msg.gmailEmails.filter(email => email.id !== emailId);
+          return {
+            ...msg,
+            gmailEmails: updatedEmails,
+            text: updatedEmails.length === 0 
+              ? "All emails have been archived." 
+              : `I found ${updatedEmails.length} emails in your inbox.`
+          };
+        }
+        return msg;
+      })
+    );
+  };
+
+
+
   return (
     <div className="chat-interface">
       {/* Sticky Header */}
@@ -345,6 +366,7 @@ const ChatInterface = () => {
                       <GmailDisplay 
                         emails={message.gmailEmails} 
                         onEmailClick={handleGmailEmailClick}
+                        onEmailArchived={handleEmailArchived}
                       />
                     )}
                     {message.statusIcon && (
