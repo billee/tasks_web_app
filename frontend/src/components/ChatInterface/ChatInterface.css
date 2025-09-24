@@ -334,7 +334,7 @@
 }
 
 /* Typing indicator */
-.typing-indicator {
+.chat-interface .typing-indicator {
   display: inline-flex;
   align-items: center;
   height: 20px;
@@ -342,7 +342,7 @@
   padding: 0 10px;
 }
 
-.typing-indicator span {
+.chat-interface .typing-indicator span {
   height: 8px;
   width: 8px;
   background: #999;
@@ -352,11 +352,11 @@
   display: inline-block;
 }
 
-.typing-indicator span:nth-child(2) {
+.chat-interface .typing-indicator span:nth-child(2) {
   animation-delay: 0.2s;
 }
 
-.typing-indicator span:nth-child(3) {
+.chat-interface .typing-indicator span:nth-child(3) {
   animation-delay: 0.4s;
 }
 
@@ -371,26 +371,25 @@
 }
 
 /* Ensure typing indicator container doesn't use flex */
-.chat-message.ai-message .typing-indicator-container {
+.chat-interface .chat-message.ai-message .typing-indicator-container {
   display: block;
 }
 
-.chat-message.ai-message .typing-indicator-container .message-bubble {
+.chat-interface .chat-message.ai-message .typing-indicator-container .message-bubble {
   display: inline-block;
   width: auto;
 }
 
-
 /* More specific typing indicator fixes */
-.ai-message .message-bubble.typing-indicator {
-  display: inline-flex !important;
+.chat-interface .ai-message .message-bubble.typing-indicator {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 10px 15px;
   min-width: 60px;
 }
 
-.ai-message .message-bubble.typing-indicator span {
+.chat-interface .ai-message .message-bubble.typing-indicator span {
   flex: 0 0 auto;
   height: 8px;
   width: 8px;
@@ -400,10 +399,9 @@
   animation: typing 1s infinite;
 }
 
-
 /* Disabled state for input and button */
-.message-input:disabled,
-.send-button:disabled {
+.chat-interface .message-input:disabled,
+.chat-interface .send-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -428,7 +426,8 @@
   border-bottom-left-radius: 5px;
 }
 
-.email-composer {
+/* Email composer styles */
+.chat-interface .email-composer {
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 15px;
@@ -438,65 +437,65 @@
   box-sizing: border-box;
 }
 
-.email-header {
+.chat-interface .email-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
 }
 
-.email-status {
+.chat-interface .email-status {
   padding: 5px 10px;
   border-radius: 4px;
   font-weight: bold;
 }
 
-.email-status.sent {
+.chat-interface .email-status.sent {
   background-color: #d4edda;
   color: #155724;
 }
 
-.email-status.failed {
+.chat-interface .email-status.failed {
   background-color: #f8d7da;
   color: #721c24;
 }
 
-.email-status.cancelled {
+.chat-interface .email-status.cancelled {
   background-color: #fff3cd;
   color: #856404;
 }
 
-.email-field {
+.chat-interface .email-field {
   margin-bottom: 15px;
 }
 
-.email-field label {
+.chat-interface .email-field label {
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
 }
 
-.email-field input,
-.email-field textarea {
+.chat-interface .email-field input,
+.chat-interface .email-field textarea {
   width: 100%;
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
 
-.email-field input:disabled,
-.email-field textarea:disabled {
+.chat-interface .email-field input:disabled,
+.chat-interface .email-field textarea:disabled {
   background-color: #f5f5f5;
   color: #666;
 }
 
-.email-actions {
+.chat-interface .email-actions {
   display: flex;
   gap: 10px;
   margin-top: 15px;
 }
 
-.btn-approve {
+.chat-interface .btn-approve {
   background-color: #28a745;
   color: white;
   border: none;
@@ -505,13 +504,21 @@
   cursor: pointer;
 }
 
-.btn-cancel {
+.chat-interface .btn-cancel {
   background-color: #dc3545;
   color: white;
   border: none;
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
+}
+
+.chat-interface .btn-approve:hover {
+  background-color: #218838;
+}
+
+.chat-interface .btn-cancel:hover {
+  background-color: #c82333;
 }
 
 /* Update the message bubble to handle inline icons */
@@ -521,17 +528,16 @@
   justify-content: space-between;
   padding: 10px 15px;
   border-radius: 18px;
-  /* max-width: 70%; */
   word-wrap: break-word;
 }
 
-.user-message .message-bubble {
+.chat-interface .user-message .message-bubble {
   background-color: #007bff;
   color: white;
   margin-left: auto;
 }
 
-.ai-message .message-bubble {
+.chat-interface .ai-message .message-bubble {
   background-color: #f0f8ff;
   color: #333;
   border: 1px solid #d1e7ff;
@@ -539,7 +545,7 @@
   text-align: center;
 }
 
-.email-view-icon {
+.chat-interface .email-view-icon {
   background: none;
   border: none;
   color: #007bff;
@@ -549,16 +555,16 @@
   margin-left: 10px;
 }
 
-.user-message .email-view-icon {
+.chat-interface .user-message .email-view-icon {
   color: white;
 }
 
-.email-view-icon:hover {
+.chat-interface .email-view-icon:hover {
   opacity: 0.8;
 }
 
 /* Modal styles */
-.modal-overlay {
+.chat-interface .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -571,7 +577,7 @@
   z-index: 1000;
 }
 
-.modal-content {
+.chat-interface .modal-content {
   background-color: white;
   padding: 20px;
   border-radius: 8px;
@@ -581,7 +587,7 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.modal-header {
+.chat-interface .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -590,7 +596,7 @@
   padding-bottom: 10px;
 }
 
-.modal-close {
+.chat-interface .modal-close {
   background: none;
   border: none;
   font-size: 24px;
@@ -598,11 +604,11 @@
   color: #999;
 }
 
-.modal-close:hover {
+.chat-interface .modal-close:hover {
   color: #333;
 }
 
-.email-content-preview {
+.chat-interface .email-content-preview {
   line-height: 1.6;
   padding: 15px;
   background-color: #f9f9f9;
@@ -610,7 +616,7 @@
 }
 
 /* Add these styles to fix email content alignment */
-.email-content-preview {
+.chat-interface .email-content-preview {
   line-height: 1.6;
   padding: 15px;
   background-color: #f9f9f9;
@@ -618,19 +624,19 @@
   text-align: left;
 }
 
-.email-content-preview p {
+.chat-interface .email-content-preview p {
   margin-bottom: 1em;
   text-align: left;
 }
 
-.email-content-preview br {
+.chat-interface .email-content-preview br {
   display: block;
   content: "";
   margin-bottom: 0.5em;
 }
 
 /* Add these styles to your CSS */
-.email-meta {
+.chat-interface .email-meta {
   padding: 10px;
   background-color: #f0f8ff;
   border-radius: 5px;
@@ -638,21 +644,17 @@
   border-left: 4px solid #6e8efb;
 }
 
-.email-meta p {
+.chat-interface .email-meta p {
   margin: 5px 0;
 }
 
-.email-content-preview {
-  line-height: 1.6;
-}
-
-.email-content-preview > div {
+.chat-interface .email-content-preview > div {
   padding: 15px;
   background-color: #f9f9f9;
   border-radius: 5px;
 }
 
-.email-meta {
+.chat-interface .email-meta {
   padding: 10px;
   background-color: #f0f8ff;
   border-radius: 5px;
@@ -660,64 +662,14 @@
   border-left: 4px solid #6e8efb;
 }
 
-.email-meta p {
+.chat-interface .email-meta p {
   margin: 5px 0;
 }
 
-.email-content-preview > div {
+.chat-interface .email-content-preview > div {
   padding: 15px;
   background-color: #f9f9f9;
   border-radius: 5px;
-}
-
-.chat-interface .email-composer {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 15px;
-  margin: 10px 0;
-  background-color: #f9f9f9;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.chat-interface .email-actions {
-  display: flex !important;
-  gap: 10px;
-  margin-top: 15px;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-.chat-interface .btn-approve {
-  background-color: #28a745 !important;
-  color: white !important;
-  border: none !important;
-  padding: 8px 16px !important;
-  border-radius: 4px !important;
-  cursor: pointer !important;
-  display: inline-block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-.chat-interface .btn-cancel {
-  background-color: #dc3545 !important;
-  color: white !important;
-  border: none !important;
-  padding: 8px 16px !important;
-  border-radius: 4px !important;
-  cursor: pointer !important;
-  display: inline-block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-.chat-interface .btn-approve:hover {
-  background-color: #218838 !important;
-}
-
-.chat-interface .btn-cancel:hover {
-  background-color: #c82333 !important;
 }
 
 /* Ensure the email composer fits within the chat message properly */
@@ -734,4 +686,45 @@
   background: transparent;
   border: none;
   box-shadow: none;
+}
+
+/* Specific styles for email actions within chat interface */
+.chat-interface .ai-message .email-composer .email-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  visibility: visible;
+  opacity: 1;
+}
+
+.chat-interface .ai-message .email-composer .btn-approve {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-block;
+  visibility: visible;
+  opacity: 1;
+}
+
+.chat-interface .ai-message .email-composer .btn-cancel {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-block;
+  visibility: visible;
+  opacity: 1;
+}
+
+.chat-interface .ai-message .email-composer .btn-approve:hover {
+  background-color: #218838;
+}
+
+.chat-interface .ai-message .email-composer .btn-cancel:hover {
+  background-color: #c82333;
 }

@@ -5,7 +5,7 @@
   background: white;
 }
 
-.gmail-header {
+.gmail-display .gmail-header {
   padding: 10px 12px;
   background: #f8f9fa;
   border-bottom: 1px solid #e0e0e0;
@@ -16,44 +16,45 @@
   gap: 6px;
 }
 
-.gmail-header i {
+.gmail-display .gmail-header i {
   color: #ea4335;
 }
 
-.email-list {
+.gmail-display .email-list {
   max-height: 200px;
   overflow-y: auto;
 }
 
-.email-item {
+.gmail-display .email-item {
   padding: 10px 12px;
   border-bottom: 1px solid #f5f5f5;
   cursor: pointer;
   transition: background 0.2s;
   font-size: 0.85rem;
+  position: relative;
 }
 
-.email-item:hover {
+.gmail-display .email-item:hover {
   background: #f8f9fa;
 }
 
-.email-item:last-child {
+.gmail-display .email-item:last-child {
   border-bottom: none;
 }
 
-.email-content {
+.gmail-display .email-content {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 10px;
 }
 
-.email-info {
+.gmail-display .email-info {
   flex: 1;
   min-width: 0; /* Important for text truncation */
 }
 
-.email-sender {
+.gmail-display .email-sender {
   font-weight: 600;
   color: #1a73e8;
   margin-bottom: 2px;
@@ -63,7 +64,7 @@
   text-overflow: ellipsis;
 }
 
-.email-subject {
+.gmail-display .email-subject {
   font-weight: 500;
   margin-bottom: 3px;
   color: #202124;
@@ -73,7 +74,7 @@
   text-overflow: ellipsis;
 }
 
-.email-snippet {
+.gmail-display .email-snippet {
   color: #5f6368;
   line-height: 1.3;
   display: -webkit-box;
@@ -84,71 +85,75 @@
   margin-bottom: 4px;
 }
 
-.email-date {
+.gmail-display .email-date {
   color: #5f6368;
   font-size: 0.75rem;
 }
 
-.email-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 6px; /* Reduced gap to fit three icons */
-  opacity: 0;
-  transition: opacity 0.2s;
-  padding: 2px;
+/* Specific to GmailDisplay email actions - hidden by default */
+.gmail-display .email-item .email-actions {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: all 0.3s ease !important;
+  padding: 2px !important;
 }
 
-.email-item:hover .email-actions {
-  opacity: 1;
+.gmail-display .email-item:hover .email-actions {
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
-.email-action-btn {
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.8rem;
-  color: #5f6368;
+.gmail-display .email-item .email-action-btn {
+  background: white !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 4px !important;
+  width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  font-size: 0.8rem !important;
+  color: #5f6368 !important;
 }
 
-.email-action-btn:hover {
-  background: #f8f9fa;
-  border-color: #c6c6c6;
-  transform: scale(1.1);
+.gmail-display .email-item .email-action-btn:hover {
+  background: #f8f9fa !important;
+  border-color: #c6c6c6 !important;
+  transform: scale(1.1) !important;
 }
 
-.reply-btn:hover {
-  color: #1a73e8;
-  border-color: #1a73e8;
+.gmail-display .email-item .reply-btn:hover {
+  color: #1a73e8 !important;
+  border-color: #1a73e8 !important;
 }
 
-.categorize-btn:hover {
-  color: #34a853;
-  border-color: #34a853;
+.gmail-display .email-item .categorize-btn:hover {
+  color: #34a853 !important;
+  border-color: #34a853 !important;
 }
 
-.remove-btn:hover {
-  color: #ea4335;
-  border-color: #ea4335;
+.gmail-display .email-item .archive-btn:hover {
+  color: #ea4335 !important;
+  border-color: #ea4335 !important;
 }
 
-/* Responsive design */
+/* Responsive design - Always show on mobile */
 @media (max-width: 768px) {
-  .email-actions {
-    opacity: 1; /* Always show on mobile */
-    flex-direction: row;
-    gap: 4px;
+  .gmail-display .email-item .email-actions {
+    opacity: 1 !important;
+    visibility: visible !important;
+    flex-direction: row !important;
+    gap: 4px !important;
   }
   
-  .email-action-btn {
-    width: 24px;
-    height: 24px;
-    font-size: 0.7rem;
+  .gmail-display .email-item .email-action-btn {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 0.7rem !important;
   }
 }
