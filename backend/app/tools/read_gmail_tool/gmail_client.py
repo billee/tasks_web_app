@@ -204,3 +204,48 @@ class GmailClient:
                 "success": False,
                 "message": f"Failed to archive email: {str(error)}"
             }
+
+    def get_email_body(self, message_id):
+        """Get the full body content of an email"""
+        if not self.service:
+            raise Exception("Gmail service not initialized. Call authenticate() first.")
+            
+        try:
+            # Get the full message with body content
+            message = self.service.users().messages().get(
+                userId='me',
+                id=message_id,
+                format='full'
+            ).execute()
+            
+            return self._extract_email_body(message.get('payload', {}))
+            
+        except HttpError as error:
+            print(f'Error getting email body: {error}')
+            return "Unable to retrieve email content"
+
+    def _extract_email_body(self, payload):
+        """Extract the email body from the message payload"""
+        body = ""
+        
+        # Check if the payload has parts (multipart message)
+        if 'parts' in payload:
+            for part in payload['parts']:
+                # Look for text/plain part first
+                if part['mimeType'] == 'text/plain':
+                    if 'data' in part['body']:
+                        body = base64.urlsafe_b64decode(part['body']['data']).decode('utf-8')
+                        break
+                # Fallback to text/html if plain text not found
+                elif part['mimeType'] == 'text/html' and not body:
+                    if 'data' in part['body']:
+                        body = base64.urlsafe_b64decode(part['body']['data']).decode('utf-8')
+                        # Remove HTML tags for plain text display
+                        import re
+                        body = re.sub('<[^<]+?>', '', body)
+        else:
+            # Simple message without parts
+            if 'body' in payload and 'data' in payload['body']:
+                body = base64.urlsafe_b64decode(payload['body']['data']).decode('utf-8')
+        
+        return body if body else "No content available"

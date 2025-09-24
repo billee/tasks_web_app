@@ -114,7 +114,8 @@ async def email_tools_chat(
                                 from_address=email_data.get("from_address", email_data.get("from", "")),
                                 date=email_data.get("date", ""),
                                 snippet=email_data.get("snippet", ""),
-                                thread_id=email_data.get("thread_id")
+                                thread_id=email_data.get("thread_id"),
+                                body=email_data.get("body", "")  # Add full body content
                             ))
                     break
         

@@ -8,6 +8,7 @@ class GmailEmail(BaseModel):
     date: str
     snippet: str
     thread_id: Optional[str] = None
+    body: str = ""  # Add body field for full email content
 
 class GmailReadRequest(BaseModel):
     max_results: Optional[int] = 10

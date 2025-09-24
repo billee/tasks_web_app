@@ -21,19 +21,23 @@ def read_gmail_inbox(user_id: int, max_results: int = 10) -> Dict[str, Any]:
         # Authenticate and get service
         service = gmail_client.authenticate(user_id)
         
-        # Get inbox emails
+        # Get inbox emails with full content
         emails_data = gmail_client.get_inbox_emails(max_results)
         
         # Format emails for response
         formatted_emails = []
         for email in emails_data:
+            # Get full email body for each message
+            full_body = gmail_client.get_email_body(email['id'])
+            
             formatted_emails.append(GmailEmail(
                 id=email['id'],
                 subject=email['subject'],
                 from_address=email['from'],
                 date=email['date'],
                 snippet=email['snippet'],
-                thread_id=email.get('threadId')
+                thread_id=email.get('threadId'),
+                body=full_body  # Add full body content
             ))
         
         return {
