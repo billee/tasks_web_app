@@ -134,3 +134,27 @@ export const archiveGmailEmail = async (messageId) => {
     throw error;
   }
 };
+
+export const sendGmailReply = async (replyData) => {
+  try {
+    const response = await api.post('/email-tools/send-reply', replyData);
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 401) {
+      throw new Error('Please login again');
+    }
+    throw error;
+  }
+};
+
+export const createGmailReplyDraft = async (draftData) => {
+  try {
+    const response = await api.post('/email-tools/create-draft', draftData);
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 401) {
+      throw new Error('Please login again');
+    }
+    throw error;
+  }
+};

@@ -73,3 +73,18 @@ tool_registry.register_tool(Tool(
     }
 ))
 
+tool_registry.register_tool(Tool(
+    name="reply_gmail",
+    description="Reply to a Gmail email thread. Use this when the user wants to reply to an email in their Gmail inbox.",
+    parameters={
+        "thread_id": {"type": "string", "description": "The Gmail thread ID of the email to reply to"},
+        "to_email": {"type": "string", "description": "The email address to reply to"},
+        "subject": {"type": "string", "description": "The subject of the reply, typically starting with 'Re: '"},
+        "body": {"type": "string", "description": "The body content of the reply"},
+        "references": {
+            "type": "string", 
+            "description": "References header for proper email threading",
+            "optional": True
+        }
+    }
+))

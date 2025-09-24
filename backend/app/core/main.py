@@ -22,6 +22,7 @@ from app.tools.lookup_contact_tool.router import router as lookup_contact_router
 from app.tools.save_email_history_tool.router import router as save_history_router
 from app.tools.add_contact_mapping_tool.router import router as contact_mapping_router
 from app.tools.chat_router import router as chat_router
+from app.tools.reply_gmail_tool.router import router as reply_gmail_router
 
 # Import read_gmail_router with error handling
 try:
@@ -64,6 +65,7 @@ app.include_router(send_email_router, prefix="/email-tools")
 app.include_router(lookup_contact_router, prefix="/email-tools")
 app.include_router(save_history_router, prefix="/email-tools")
 app.include_router(contact_mapping_router, prefix="/email-tools")
+app.include_router(reply_gmail_router, prefix="/email-tools", tags=["email-tools"])
 
 # Only include read_gmail_router if it's available
 if READ_GMAIL_AVAILABLE:

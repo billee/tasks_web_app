@@ -3,14 +3,16 @@ import './GmailDisplay.css';
 import { formatTime } from '../../utils/timeUtils';
 import { archiveGmailEmail } from '../../services/emailTools';
 
-const GmailDisplay = ({ emails, onEmailClick, onEmailArchived }) => {
+const GmailDisplay = ({ emails, onEmailClick, onEmailArchived, onEmailReply }) => {
   if (!emails || emails.length === 0) {
     return null;
   }
 
   const handleReplyClick = (email, e) => {
     e.stopPropagation();
-    console.log('Reply to email:', email);
+    if (onEmailReply) {
+      onEmailReply(email);
+    }
   };
 
   const handleCategorizeClick = (email, e) => {

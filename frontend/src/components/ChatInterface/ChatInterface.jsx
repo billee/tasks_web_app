@@ -2,8 +2,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './ChatInterface.css';
 import { getLLMResponse } from '../../services/llm';
-import { emailToolsChat, approveAndSendEmail } from '../../services/emailTools';
+import { emailToolsChat, approveAndSendEmail, sendGmailReply, createGmailReplyDraft } from '../../services/emailTools';
 import EmailComposer from '../EmailComposer/EmailComposer';
+import ReplyComposer from '../ReplyComposer/ReplyComposer';
 import { getEmailContent } from '../../services/emailTools';
 import { formatTime, getCurrentTimestamp } from '../../utils/timeUtils';
 import GmailDisplay from '../GmailDisplay/GmailDisplay';
@@ -29,6 +30,7 @@ const ChatInterface = () => {
     content: ''
   });
   const [selectedGmailEmail, setSelectedGmailEmail] = useState(null);
+  const [replyingToEmail, setReplyingToEmail] = useState(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -36,7 +38,7 @@ const ChatInterface = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, pendingEmail, isLoading]);
+  }, [messages, pendingEmail, isLoading, replyingToEmail]);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -270,6 +272,86 @@ const ChatInterface = () => {
     setSelectedGmailEmail(email);
   };
 
+  // Handler for email reply
+  const handleEmailReply = (email) => {
+    setReplyingToEmail(email);
+  };
+
+  // Handler for reply send
+  const handleReplySend = async (replyData) => {
+    try {
+      const response = await sendGmailReply(replyData);
+      if (response.success) {
+        // Add success message
+        const successMessage = { 
+          text: `Reply sent to ${replyData.to_email}`, 
+          isUser: false, 
+          time: new Date().toISOString(),
+          isEmailStatus: true,
+          id: Date.now()
+        };
+        setMessages(prevMessages => [...prevMessages, successMessage]);
+        setReplyingToEmail(null);
+      } else {
+        // Handle error
+        const errorMessage = { 
+          text: `Failed to send reply: ${response.message}`, 
+          isUser: false, 
+          time: new Date().toISOString(),
+          id: Date.now()
+        };
+        setMessages(prevMessages => [...prevMessages, errorMessage]);
+      }
+    } catch (error) {
+      // Handle error
+      const errorMessage = { 
+        text: "Failed to send reply. Please try again.", 
+        isUser: false, 
+        time: new Date().toISOString(),
+        id: Date.now()
+      };
+      setMessages(prevMessages => [...prevMessages, errorMessage]);
+    }
+  };
+
+  // Handler for reply draft save
+  const handleReplySaveDraft = async (draftData) => {
+    try {
+      const response = await createGmailReplyDraft(draftData);
+      if (response.success) {
+        const successMessage = { 
+          text: `Draft saved for reply to ${draftData.to_email}`, 
+          isUser: false, 
+          time: new Date().toISOString(),
+          id: Date.now()
+        };
+        setMessages(prevMessages => [...prevMessages, successMessage]);
+        setReplyingToEmail(null);
+      } else {
+        const errorMessage = { 
+          text: `Failed to save draft: ${response.message}`, 
+          isUser: false, 
+          time: new Date().toISOString(),
+          id: Date.now()
+        };
+        setMessages(prevMessages => [...prevMessages, errorMessage]);
+      }
+    } catch (error) {
+      const errorMessage = { 
+        text: "Failed to save draft. Please try again.", 
+        isUser: false, 
+        time: new Date().toISOString(),
+        id: Date.now()
+      };
+      setMessages(prevMessages => [...prevMessages, errorMessage]);
+    }
+  };
+
+  // Handler for reply cancellation
+  const handleReplyCancel = () => {
+    setReplyingToEmail(null);
+  };
+
   // Add the missing handleKeyPress function
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !isLoading) {
@@ -319,8 +401,6 @@ const ChatInterface = () => {
     );
   };
 
-
-
   return (
     <div className="chat-interface">
       {/* Sticky Header */}
@@ -367,6 +447,7 @@ const ChatInterface = () => {
                         emails={message.gmailEmails} 
                         onEmailClick={handleGmailEmailClick}
                         onEmailArchived={handleEmailArchived}
+                        onEmailReply={handleEmailReply}
                       />
                     )}
                     {message.statusIcon && (
@@ -459,6 +540,20 @@ const ChatInterface = () => {
                         </p>
                       </div>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Reply Composer Modal */}
+              {replyingToEmail && (
+                <div className="modal-overlay" onClick={handleReplyCancel}>
+                  <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                    <ReplyComposer
+                      email={replyingToEmail}
+                      onCancel={handleReplyCancel}
+                      onSend={handleReplySend}
+                      onSaveDraft={handleReplySaveDraft}
+                    />
                   </div>
                 </div>
               )}
