@@ -3,6 +3,7 @@ import os
 import json
 from pathlib import Path
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -67,6 +68,19 @@ class GmailReplyClient:
         creds = self._get_credentials()
         self.service = build('gmail', 'v1', credentials=creds)
     
+    def _format_email_body(self, body: str) -> str:
+        """Format the email body with proper HTML formatting"""
+        # Convert plain text to HTML with proper formatting
+        html_body = body.replace('\n', '<br>')
+        
+        # Add basic HTML structure and styling
+        formatted_body = f"""
+        <div style="font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5; color: #333;">
+            {html_body}
+        </div>
+        """
+        return formatted_body
+    
     def send_reply(self, thread_id: str, to_email: str, subject: str, body: str, 
                   references: str = None) -> Dict[str, Any]:
         """Send a reply to a Gmail thread using existing permissions"""
@@ -74,19 +88,25 @@ class GmailReplyClient:
             self._build_service()
             
         try:
-            # Create the email message
-            message = MIMEText(body, 'html' if '<' in body else 'plain')
+            # Format the body with HTML
+            formatted_body = self._format_email_body(body)
+            
+            # Create a multipart message (both HTML and plain text)
+            message = MIMEMultipart('alternative')
             message['To'] = to_email
             message['Subject'] = subject
             if references:
                 message['In-Reply-To'] = references
                 message['References'] = references
             
+            # Add both HTML and plain text versions
+            message.attach(MIMEText(formatted_body, 'html'))
+            message.attach(MIMEText(body, 'plain'))
+            
             # Encode the message
             raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
             
             # Send the message as a reply to the thread
-            # Note: gmail.modify scope should allow sending replies within threads
             sent_message = self.service.users().messages().send(
                 userId='me',
                 body={
@@ -134,9 +154,17 @@ class GmailReplyClient:
             self._build_service()
             
         try:
-            message = MIMEText(body, 'html' if '<' in body else 'plain')
+            # Format the body with HTML
+            formatted_body = self._format_email_body(body)
+            
+            # Create a multipart message for draft
+            message = MIMEMultipart('alternative')
             message['To'] = to_email
             message['Subject'] = subject
+            
+            # Add both HTML and plain text versions
+            message.attach(MIMEText(formatted_body, 'html'))
+            message.attach(MIMEText(body, 'plain'))
             
             raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
             
