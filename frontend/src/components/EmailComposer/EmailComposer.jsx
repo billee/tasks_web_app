@@ -143,6 +143,7 @@ const EmailComposer = ({
             />
       </div>
       
+      {/* FIX: Ensure buttons are always shown when not processed */}
       {!isProcessed && (
       <div className="email-actions">
           <button className="btn-approve" onClick={handleApprove} disabled={resolvingName}>

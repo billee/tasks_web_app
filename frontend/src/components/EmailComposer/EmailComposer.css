@@ -108,3 +108,129 @@
 .btn-cancel:hover {
   background-color: #c82333;
 }
+
+.email-composer {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 10px 0;
+  background-color: #f9f9f9;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.email-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.email-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.email-status {
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.email-status.sent {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.email-status.failed {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.email-status.cancelled {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.email-field {
+  margin-bottom: 15px;
+}
+
+.email-field label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+
+.email-field input,
+.email-field textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.email-field input:focus,
+.email-field textarea:focus {
+  outline: none;
+  border-color: #6e8efb;
+  box-shadow: 0 0 0 2px rgba(110, 142, 251, 0.2);
+}
+
+.email-field input:disabled,
+.email-field textarea:disabled {
+  background-color: #f5f5f5;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.email-actions {
+  display: flex !important;
+  gap: 10px;
+  margin-top: 15px;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.btn-approve {
+  background-color: #28a745 !important;
+  color: white !important;
+  border: none !important;
+  padding: 8px 16px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  font-weight: bold !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.btn-approve:hover {
+  background-color: #218838 !important;
+}
+
+.btn-approve:disabled {
+  background-color: #6c757d !important;
+  cursor: not-allowed !important;
+}
+
+.btn-cancel {
+  background-color: #dc3545 !important;
+  color: white !important;
+  border: none !important;
+  padding: 8px 16px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  font-weight: bold !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.btn-cancel:hover {
+  background-color: #c82333 !important;
+}
