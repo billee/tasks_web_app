@@ -1,5 +1,7 @@
 import base64
 import os
+import json
+from pathlib import Path
 from email.mime.text import MIMEText
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
@@ -10,25 +12,54 @@ class GmailReplyClient:
     def __init__(self, user_id: str):
         self.user_id = user_id
         self.service = None
+        self.SCOPES = [
+            'https://www.googleapis.com/auth/gmail.readonly',
+            'https://www.googleapis.com/auth/gmail.modify',
+            'https://www.googleapis.com/auth/gmail.send'
+        ]
+        
+        # Get the correct path - match the read tool's path calculation
+        self.root_dir = Path(__file__).parent.parent.parent  # This goes up to app directory
+        self.credentials_path = self.root_dir / "core" / "credentials.json"
+        self.tokens_dir = self.root_dir / "core" / "tokens"  # Tokens in core/tokens/
         
     def _get_credentials(self) -> Credentials:
-        """Get Gmail credentials for the user"""
-        # TODO: Implement credential retrieval from database
-        # This should fetch stored OAuth tokens for the user
-        from app.common.database import get_db
-        from app.common.models import User
-        from sqlalchemy.orm import Session
-        
-        db: Session = next(get_db())
-        user = db.query(User).filter(User.id == self.user_id).first()
-        
-        if not user or not user.gmail_credentials:
-            raise Exception("Gmail credentials not found for user")
+        """Get Gmail credentials for the user using token file (same as read tool)"""
+        # Check if credentials file exists
+        if not os.path.exists(self.credentials_path):
+            raise Exception("Gmail credentials not configured. Please set up OAuth credentials.")
             
-        # Assuming credentials are stored as a JSON string
-        import json
-        creds_dict = json.loads(user.gmail_credentials)
-        creds = Credentials.from_authorized_user_info(creds_dict)
+        creds = None
+        # Store tokens in core/tokens directory
+        token_path = self.tokens_dir / f"{self.user_id}_token.json"
+        
+        # Create tokens directory if it doesn't exist
+        os.makedirs(self.tokens_dir, exist_ok=True)
+        
+        print(f"Looking for token at: {token_path}")
+        print(f"Token directory exists: {os.path.exists(self.tokens_dir)}")
+        
+        if os.path.exists(token_path):
+            try:
+                print("Found existing token file, loading...")
+                creds = Credentials.from_authorized_user_file(token_path, self.SCOPES)
+                print("Token loaded successfully")
+                
+                # Check if the token has the required scopes for sending
+                if creds and creds.valid:
+                    token_scopes = creds.scopes if creds.scopes else []
+                    print(f"Token scopes: {token_scopes}")
+                    
+                    # Check if we have sufficient permissions
+                    if not any('gmail.modify' in scope for scope in token_scopes):
+                        raise Exception("Token does not have gmail.modify scope required for sending replies")
+                        
+            except Exception as e:
+                print(f"Error loading token: {e}")
+                raise Exception(f"Failed to load Gmail token: {str(e)}")
+        else:
+            raise Exception(f"Gmail token not found for user {self.user_id}. Please authenticate first.")
+        
         return creds
     
     def _build_service(self):
@@ -38,7 +69,7 @@ class GmailReplyClient:
     
     def send_reply(self, thread_id: str, to_email: str, subject: str, body: str, 
                   references: str = None) -> Dict[str, Any]:
-        """Send a reply to a Gmail thread"""
+        """Send a reply to a Gmail thread using existing permissions"""
         if not self.service:
             self._build_service()
             
@@ -47,13 +78,15 @@ class GmailReplyClient:
             message = MIMEText(body, 'html' if '<' in body else 'plain')
             message['To'] = to_email
             message['Subject'] = subject
-            message['In-Reply-To'] = references
-            message['References'] = references
+            if references:
+                message['In-Reply-To'] = references
+                message['References'] = references
             
             # Encode the message
             raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
             
             # Send the message as a reply to the thread
+            # Note: gmail.modify scope should allow sending replies within threads
             sent_message = self.service.users().messages().send(
                 userId='me',
                 body={
@@ -74,10 +107,24 @@ class GmailReplyClient:
             }
             
         except HttpError as error:
+            error_msg = str(error)
+            if 'insufficient' in error_msg.lower() or 'permission' in error_msg.lower():
+                return {
+                    "success": False,
+                    "error": error_msg,
+                    "message": "Insufficient permissions to send replies. Please re-authenticate with Gmail."
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": error_msg,
+                    "message": f"Failed to send reply: {error}"
+                }
+        except Exception as e:
             return {
                 "success": False,
-                "error": str(error),
-                "message": f"Failed to send reply: {error}"
+                "error": str(e),
+                "message": f"Failed to send reply: {e}"
             }
     
     def create_reply_draft(self, thread_id: str, to_email: str, subject: str, 
