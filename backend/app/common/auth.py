@@ -245,6 +245,25 @@ async def admin_create_user(
     
     return db_user
 
+
+@router.get("/oauth2callback")
+async def oauth2callback(code: str, state: str = None):
+    """Handle OAuth2 callback from Google"""
+    try:
+        # Extract user_id from state if you passed it
+        user_id = 1  # You might want to get this from state or session
+        
+        gmail_client = GmailClient()
+        gmail_client.authenticate(user_id, authorization_code=code)
+        
+        return {"message": "Gmail authentication successful"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+
+
+
 def require_admin(current_user: User = Depends(get_current_user)):
     """
     Dependency to require admin privileges.

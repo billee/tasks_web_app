@@ -1,6 +1,6 @@
 # Make sure models.py doesn't import from auth.py
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -21,6 +21,7 @@ class User(Base):
     # Relationships
     email_histories = relationship("EmailHistory", back_populates="user")
     email_name_maps = relationship("EmailNameMap", back_populates="user")
+    oauth_tokens = relationship("OAuthToken", back_populates="user")
 
 class EmailHistory(Base):
     __tablename__ = "email_histories"
@@ -48,3 +49,15 @@ class EmailNameMap(Base):
     
     # Relationships
     user = relationship("User", back_populates="email_name_maps")
+
+class OAuthToken(Base):
+    __tablename__ = "oauth_tokens"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    service = Column(String, nullable=False)  # 'gmail', 'outlook', etc.
+    token_data = Column(JSON, nullable=False)  # Store token as JSON
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = relationship("User", back_populates="oauth_tokens")

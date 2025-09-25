@@ -6,6 +6,7 @@ from app.common.models import User
 from .read_functions import read_gmail_inbox, archive_gmail_email
 from .schemas import GmailReadRequest
 from pydantic import BaseModel
+from .gmail_client import GmailClient
 
 router = APIRouter()
 
@@ -58,9 +59,11 @@ async def check_inbox_status(
         from .gmail_client import GmailClient
         gmail_client = GmailClient()
         is_configured = gmail_client.is_configured()
+        is_production = gmail_client.is_production
         
         return {
             "configured": is_configured,
+            "environment": "production" if is_production else "local",
             "message": "Gmail API is configured" if is_configured else "Gmail API not configured"
         }
         

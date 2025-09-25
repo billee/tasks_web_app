@@ -2,52 +2,77 @@
 
 import os
 import base64
+import json
 from pathlib import Path
 from fastapi import HTTPException
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google_auth_oauthlib.flow import InstalledAppFlow, Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 class GmailClient:
     def __init__(self):
-        # Add modify scope for archiving
         self.SCOPES = [
             'https://www.googleapis.com/auth/gmail.readonly',
-            'https://www.googleapis.com/auth/gmail.modify'  # Add this for archiving
+            'https://www.googleapis.com/auth/gmail.modify'
         ]
         self.service = None
         
-        # Get the correct path - tokens should be in the same directory as credentials.json
-        self.root_dir = Path(__file__).parent.parent.parent  # This goes up to app directory
+        # Environment detection
+        self.is_production = os.getenv('RENDER', False) or os.getenv('ENVIRONMENT') == 'production'
+        
+        # Local file paths (preserve existing logic)
+        self.root_dir = Path(__file__).parent.parent.parent
         self.credentials_path = self.root_dir / "core" / "credentials.json"
-        self.tokens_dir = self.root_dir / "core" / "tokens"  # Tokens in core/tokens/
+        self.tokens_dir = self.root_dir / "core" / "tokens"
         
     def is_configured(self):
-        """Check if Gmail API is configured"""
-        return os.path.exists(self.credentials_path)
-        
+        """Check if Gmail API is configured for current environment"""
+        if self.is_production:
+            # Production: Check environment variables
+            return all([
+                os.getenv('GOOGLE_OAUTH_CLIENT_ID'),
+                os.getenv('GOOGLE_OAUTH_CLIENT_SECRET')
+            ])
+        else:
+            # Local: Check credentials file
+            return os.path.exists(self.credentials_path)
+    
+    def get_production_client_config(self):
+        """Get OAuth client config from environment variables for production"""
+        return {
+            "web": {
+                "client_id": os.getenv('GOOGLE_OAUTH_CLIENT_ID'),
+                "client_secret": os.getenv('GOOGLE_OAUTH_CLIENT_SECRET'),
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "redirect_uris": [os.getenv('GOOGLE_OAUTH_REDIRECT_URI', 'http://localhost:8080/oauth2callback')]
+            }
+        }
 
     def authenticate(self, user_id):
-        """Authenticate with Gmail API for a specific user"""
-        # Check if credentials file exists
+        """Authenticate with Gmail API - uses different methods for local vs production"""
         if not self.is_configured():
-            print(f"Credentials file not found at: {self.credentials_path}")
-            raise HTTPException(
-                status_code=501, 
-                detail="Gmail credentials not configured. Please set up OAuth credentials."
-            )
-            
+            error_msg = ("Gmail API not configured. "
+                        if self.is_production 
+                        else "Gmail credentials not configured. Please set up OAuth credentials.")
+            raise HTTPException(status_code=501, detail=error_msg)
+        
+        if self.is_production:
+            return self._authenticate_production(user_id)
+        else:
+            return self._authenticate_local(user_id)
+
+    def _authenticate_local(self, user_id):
+        """Original local authentication method - PRESERVED EXACTLY"""
         creds = None
-        # Store tokens in core/tokens directory
         token_path = self.tokens_dir / f"{user_id}_token.json"
         
         # Create tokens directory if it doesn't exist
         os.makedirs(self.tokens_dir, exist_ok=True)
         
-        print(f"Looking for token at: {token_path}")
-        print(f"Token directory exists: {os.path.exists(self.tokens_dir)}")
+        print(f"Local auth: Looking for token at: {token_path}")
         
         if os.path.exists(token_path):
             try:
@@ -69,7 +94,6 @@ class GmailClient:
                         
             except Exception as e:
                 print(f"Error loading token: {e}")
-                # Remove invalid token file
                 if os.path.exists(token_path):
                     os.remove(token_path)
                 creds = None
@@ -82,7 +106,6 @@ class GmailClient:
                     print("Token refreshed successfully")
                 except Exception as e:
                     print(f"Error refreshing token: {e}")
-                    # Remove invalid token file and force re-authentication
                     if os.path.exists(token_path):
                         os.remove(token_path)
                     creds = None
@@ -93,7 +116,6 @@ class GmailClient:
                     print(f"Using credentials file at: {self.credentials_path}")
                     flow = InstalledAppFlow.from_client_secrets_file(
                         str(self.credentials_path), self.SCOPES)
-                    # Use a fixed port and make sure it matches Google Cloud Console
                     creds = flow.run_local_server(port=8080, prompt='consent')
                     print("Authentication successful")
                 except Exception as e:
@@ -103,7 +125,6 @@ class GmailClient:
                         detail=f"Failed to authenticate with Gmail: {str(e)}"
                     )
             
-            # Save the credentials for the next run (only if we have valid creds)
             if creds:
                 print(f"Saving token to: {token_path}")
                 with open(token_path, 'w') as token:
@@ -118,8 +139,16 @@ class GmailClient:
         self.service = build('gmail', 'v1', credentials=creds)
         return self.service
 
+    def _authenticate_production(self, user_id):
+        """Production authentication using environment variables"""
+        # For now, return the same error but we'll implement this properly
+        # This maintains the existing behavior until we implement production auth
+        raise HTTPException(
+            status_code=501,
+            detail="Gmail OAuth not configured for production. Please set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET environment variables."
+        )
 
-
+    # KEEP ALL EXISTING METHODS EXACTLY AS THEY ARE
     def get_inbox_emails(self, max_results=10):
         """Get emails from inbox"""
         if not self.service:
@@ -153,7 +182,7 @@ class GmailClient:
                     'subject': '',
                     'from': '',
                     'date': '',
-                    'threadId': msg.get('threadId')  # Add threadId for archiving
+                    'threadId': msg.get('threadId')
                 }
                 
                 for header in headers:
@@ -179,8 +208,6 @@ class GmailClient:
             raise Exception("Gmail service not initialized. Call authenticate() first.")
             
         try:
-            # Remove the 'INBOX' label to archive the email
-            # This moves it to "All Mail" but removes it from inbox
             body = {
                 'removeLabelIds': ['INBOX']
             }
@@ -211,7 +238,6 @@ class GmailClient:
             raise Exception("Gmail service not initialized. Call authenticate() first.")
             
         try:
-            # Get the full message with body content
             message = self.service.users().messages().get(
                 userId='me',
                 id=message_id,
@@ -228,23 +254,18 @@ class GmailClient:
         """Extract the email body from the message payload"""
         body = ""
         
-        # Check if the payload has parts (multipart message)
         if 'parts' in payload:
             for part in payload['parts']:
-                # Look for text/plain part first
                 if part['mimeType'] == 'text/plain':
                     if 'data' in part['body']:
                         body = base64.urlsafe_b64decode(part['body']['data']).decode('utf-8')
                         break
-                # Fallback to text/html if plain text not found
                 elif part['mimeType'] == 'text/html' and not body:
                     if 'data' in part['body']:
                         body = base64.urlsafe_b64decode(part['body']['data']).decode('utf-8')
-                        # Remove HTML tags for plain text display
                         import re
                         body = re.sub('<[^<]+?>', '', body)
         else:
-            # Simple message without parts
             if 'body' in payload and 'data' in payload['body']:
                 body = base64.urlsafe_b64decode(payload['body']['data']).decode('utf-8')
         
