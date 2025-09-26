@@ -60,24 +60,43 @@ async def email_tools_chat(
         # If user explicitly asks to read Gmail and we're in email tools mode, call tool directly
         if should_read_gmail and request.tool_type == 'email':
             print("User requested Gmail reading, calling tool directly")
-            gmail_result = read_gmail_inbox(current_user.id, 10)
-            
-            if gmail_result["success"]:
-                return EmailToolsResponse(
-                    success=True,
-                    message=f"I found {gmail_result['count']} emails in your inbox. Here are your recent emails:",
-                    tool_results=[],
-                    has_tool_calls=False,
-                    gmail_emails=gmail_result["emails"]
-                )
-            else:
-                return EmailToolsResponse(
-                    success=False,
-                    message=gmail_result["message"],
-                    tool_results=[],
-                    has_tool_calls=False,
-                    gmail_emails=None
-                )
+            try:
+                gmail_result = read_gmail_inbox(current_user.id, 10, db)
+                
+                if gmail_result["success"]:
+                    return EmailToolsResponse(
+                        success=True,
+                        message=f"I found {gmail_result['count']} emails in your inbox. Here are your recent emails:",
+                        tool_results=[],
+                        has_tool_calls=False,
+                        gmail_emails=gmail_result["emails"]
+                    )
+                else:
+                    return EmailToolsResponse(
+                        success=False,
+                        message=gmail_result["message"],
+                        tool_results=[],
+                        has_tool_calls=False,
+                        gmail_emails=None
+                    )
+            except HTTPException as e:
+                # Handle OAuth authentication required
+                if e.status_code == 401 and isinstance(e.detail, dict) and "auth_url" in e.detail:
+                    return EmailToolsResponse(
+                        success=False,
+                        message=f"Gmail authentication required. Please visit this URL to authorize access: {e.detail['auth_url']}",
+                        tool_results=[],
+                        has_tool_calls=False,
+                        gmail_emails=None
+                    )
+                else:
+                    return EmailToolsResponse(
+                        success=False,
+                        message=str(e.detail),
+                        tool_results=[],
+                        has_tool_calls=False,
+                        gmail_emails=None
+                    )
         
         # Convert messages to OpenAI format
         openai_messages = []
