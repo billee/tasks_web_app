@@ -31,13 +31,15 @@ class GmailClient:
         """Check if Gmail API is configured for current environment"""
         if self.is_production:
             # Production: Check environment variables
-            return all([
-                os.getenv('GOOGLE_OAUTH_CLIENT_ID'),
-                os.getenv('GOOGLE_OAUTH_CLIENT_SECRET')
-            ])
+            client_id = os.getenv('GOOGLE_OAUTH_CLIENT_ID')
+            client_secret = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET')
+            print(f"Production Gmail config check - Client ID: {'Found' if client_id else 'Missing'}, Client Secret: {'Found' if client_secret else 'Missing'}")
+            return all([client_id, client_secret])
         else:
             # Local: Check credentials file
-            return os.path.exists(self.credentials_path)
+            local_configured = os.path.exists(self.credentials_path)
+            print(f"Local Gmail config check - Credentials file: {'Found' if local_configured else 'Missing'}")
+            return local_configured
     
     def get_production_client_config(self):
         """Get OAuth client config from environment variables for production"""
@@ -141,12 +143,45 @@ class GmailClient:
 
     def _authenticate_production(self, user_id):
         """Production authentication using environment variables"""
-        # For now, return the same error but we'll implement this properly
-        # This maintains the existing behavior until we implement production auth
-        raise HTTPException(
-            status_code=501,
-            detail="Gmail OAuth not configured for production. Please set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET environment variables."
-        )
+        try:
+            print("Starting production authentication...")
+            
+            # Get client config from environment variables
+            client_config = self.get_production_client_config()
+            print(f"Production client config created for client_id: {client_config['web']['client_id'][:20]}...")
+            
+            # For production, we need to implement a proper OAuth flow
+            # For now, we'll use a simplified approach that requires manual setup
+            flow = Flow.from_client_config(
+                client_config,
+                scopes=self.SCOPES,
+                redirect_uri=client_config['web']['redirect_uris'][0]
+            )
+            
+            # Generate authorization URL
+            auth_url, _ = flow.authorization_url(
+                access_type='offline',
+                include_granted_scopes='true',
+                prompt='consent'
+            )
+            
+            # In production, we need to handle the OAuth flow properly
+            # For now, we'll return an error with instructions
+            raise HTTPException(
+                status_code=401,
+                detail={
+                    "message": "Gmail authentication required for production",
+                    "auth_url": auth_url,
+                    "instructions": "Please visit the auth_url to authenticate and then use the provided code with the /oauth2callback endpoint"
+                }
+            )
+            
+        except Exception as e:
+            print(f"Production authentication error: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Production Gmail authentication failed: {str(e)}"
+            )
 
     # KEEP ALL EXISTING METHODS EXACTLY AS THEY ARE
     def get_inbox_emails(self, max_results=10):
