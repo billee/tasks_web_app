@@ -486,7 +486,7 @@ const ChatInterface = () => {
             <div className="response-section">
               {messages.map((message, index) => (
                 <div key={message.id || index} className={`chat-message ${message.isUser ? 'user-message' : 'ai-message'}`}>
-                  <div className="message-bubble">
+                  <div className={`message-bubble ${message.isOAuthRequired ? 'ai-oauth-message' : ''}`}>
                     {message.text}
                     {message.gmailEmails && (
                       <GmailDisplay 
