@@ -156,6 +156,7 @@ const ChatInterface = () => {
               response.tool_results.forEach(toolResult => {
                 // Check if this is an OAuth authorization request
                 if (toolResult.type === 'oauth_required') {
+                  console.log('OAuth required detected:', toolResult);
                   const oauthMessage = {
                     text: response.message,
                     isUser: false,
@@ -164,6 +165,7 @@ const ChatInterface = () => {
                     oauthData: toolResult,
                     id: Date.now()
                   };
+                  console.log('Creating OAuth message:', oauthMessage);
                   setMessages(prevMessages => [...prevMessages, oauthMessage]);
                 } else {
                   const toolMessage = {
@@ -503,7 +505,7 @@ const ChatInterface = () => {
                           onClick={() => handleOAuthAuthorize(message.oauthData.auth_url)}
                         >
                           <i className="fas fa-shield-alt"></i>
-                          {message.oauthData.button_text || 'Authorize Access'}
+                          {message.oauthData.button_text || 'Authorize Gmail Access'}
                         </button>
                         <p className="oauth-note">
                           This will open a secure Google authorization page in a new window.
