@@ -728,38 +728,45 @@
 .chat-interface .ai-message .email-composer .btn-cancel:hover {
   background-color: #c82333;
 }
-/* OA
-uth Authorization Styles */
+
+/* OAuth Authorization Styles - FIXED */
 .chat-interface .oauth-authorization {
   margin-top: 15px;
-  padding: 15px;
+  padding: 20px;
   background: #f8f9fa;
-  border-radius: 8px;
+  border-radius: 12px;
   border-left: 4px solid #4285f4;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .chat-interface .oauth-authorize-btn {
   background: #4285f4;
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 6px;
+  padding: 14px 28px;
+  border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  display: flex;
+  display: flex !important;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   transition: all 0.3s ease;
   width: 100%;
   justify-content: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 48px;
 }
 
 .chat-interface .oauth-authorize-btn:hover {
   background: #3367d6;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(66, 133, 244, 0.3);
 }
 
 .chat-interface .oauth-authorize-btn:active {
@@ -767,13 +774,28 @@ uth Authorization Styles */
 }
 
 .chat-interface .oauth-note {
-  font-size: 12px;
+  font-size: 13px;
   color: #666;
   text-align: center;
   margin: 0;
   font-style: italic;
+  line-height: 1.4;
 }
 
 .chat-interface .oauth-authorization i {
-  font-size: 16px;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* Ensure OAuth appears in AI messages properly */
+.chat-interface .ai-message .oauth-authorization {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.chat-interface .ai-message .oauth-authorize-btn {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
