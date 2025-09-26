@@ -5,7 +5,7 @@ from .gmail_client import GmailClient
 from .schemas import GmailReadResponse, GmailEmail
 from typing import Dict, Any
 
-def read_gmail_inbox(user_id: int, max_results: int = 10) -> Dict[str, Any]:
+def read_gmail_inbox(user_id: int, max_results: int = 10, db: Session = None) -> Dict[str, Any]:
     """Read Gmail inbox for a specific user"""
     try:
         gmail_client = GmailClient()
@@ -19,7 +19,7 @@ def read_gmail_inbox(user_id: int, max_results: int = 10) -> Dict[str, Any]:
             }
         
         # Authenticate and get service
-        service = gmail_client.authenticate(user_id)
+        service = gmail_client.authenticate(user_id, db)
         
         # Get inbox emails with full content
         emails_data = gmail_client.get_inbox_emails(max_results)
@@ -47,6 +47,9 @@ def read_gmail_inbox(user_id: int, max_results: int = 10) -> Dict[str, Any]:
             "count": len(formatted_emails)
         }
         
+    except HTTPException as e:
+        # Re-raise HTTP exceptions (like auth required)
+        raise e
     except Exception as e:
         print(f"Error reading Gmail inbox: {str(e)}")
         return {
@@ -55,7 +58,7 @@ def read_gmail_inbox(user_id: int, max_results: int = 10) -> Dict[str, Any]:
             "emails": []
         }
 
-def archive_gmail_email(user_id: int, message_id: str) -> Dict[str, Any]:
+def archive_gmail_email(user_id: int, message_id: str, db: Session = None) -> Dict[str, Any]:
     """Archive a Gmail email for a specific user"""
     try:
         gmail_client = GmailClient()
@@ -68,13 +71,16 @@ def archive_gmail_email(user_id: int, message_id: str) -> Dict[str, Any]:
             }
         
         # Authenticate and get service
-        service = gmail_client.authenticate(user_id)
+        service = gmail_client.authenticate(user_id, db)
         
         # Archive the email
         result = gmail_client.archive_email(message_id)
         
         return result
         
+    except HTTPException as e:
+        # Re-raise HTTP exceptions (like auth required)
+        raise e
     except Exception as e:
         print(f"Error archiving Gmail email: {str(e)}")
         return {
@@ -84,4 +90,4 @@ def archive_gmail_email(user_id: int, message_id: str) -> Dict[str, Any]:
 
 def read_gmail_inbox_tool(max_results: int = 10, user_id: int = None, db: Session = None) -> Dict[str, Any]:
     """Tool function to be called by AI client"""
-    return read_gmail_inbox(user_id, max_results)
+    return read_gmail_inbox(user_id, max_results, db)

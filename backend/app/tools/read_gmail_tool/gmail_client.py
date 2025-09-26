@@ -10,6 +10,8 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow, Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from sqlalchemy.orm import Session
+from datetime import datetime
 
 class GmailClient:
     def __init__(self):
@@ -53,7 +55,7 @@ class GmailClient:
             }
         }
 
-    def authenticate(self, user_id):
+    def authenticate(self, user_id, db: Session = None):
         """Authenticate with Gmail API - uses different methods for local vs production"""
         if not self.is_configured():
             error_msg = ("Gmail API not configured. "
@@ -62,7 +64,7 @@ class GmailClient:
             raise HTTPException(status_code=501, detail=error_msg)
         
         if self.is_production:
-            return self._authenticate_production(user_id)
+            return self._authenticate_production(user_id, db)
         else:
             return self._authenticate_local(user_id)
 
@@ -141,41 +143,49 @@ class GmailClient:
         self.service = build('gmail', 'v1', credentials=creds)
         return self.service
 
-    def _authenticate_production(self, user_id):
-        """Production authentication using environment variables"""
+    def _authenticate_production(self, user_id, db: Session = None):
+        """Production authentication using database-stored tokens"""
         try:
             print("Starting production authentication...")
             
-            # Get client config from environment variables
-            client_config = self.get_production_client_config()
-            print(f"Production client config created for client_id: {client_config['web']['client_id'][:20]}...")
+            if not db:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Database session required for production authentication"
+                )
             
-            # For production, we need to implement a proper OAuth flow
-            # For now, we'll use a simplified approach that requires manual setup
-            flow = Flow.from_client_config(
-                client_config,
-                scopes=self.SCOPES,
-                redirect_uri=client_config['web']['redirect_uris'][0]
-            )
+            # Try to get existing token from database
+            creds = self.get_oauth_token_from_db(user_id, db)
             
-            # Generate authorization URL
-            auth_url, _ = flow.authorization_url(
-                access_type='offline',
-                include_granted_scopes='true',
-                prompt='consent'
-            )
+            if not creds or not creds.valid:
+                if creds and creds.expired and creds.refresh_token:
+                    try:
+                        print("Refreshing expired token...")
+                        creds.refresh(Request())
+                        # Update token in database
+                        self.store_oauth_token(user_id, creds, db)
+                        print("Token refreshed successfully")
+                    except Exception as e:
+                        print(f"Error refreshing token: {e}")
+                        creds = None
+                
+                if not creds:
+                    # No valid token, need to start OAuth flow
+                    auth_url = self.get_auth_url(user_id)
+                    raise HTTPException(
+                        status_code=401,
+                        detail={
+                            "message": "Gmail authentication required",
+                            "auth_url": auth_url,
+                            "instructions": "Please visit the auth_url to authenticate Gmail access"
+                        }
+                    )
             
-            # In production, we need to handle the OAuth flow properly
-            # For now, we'll return an error with instructions
-            raise HTTPException(
-                status_code=401,
-                detail={
-                    "message": "Gmail authentication required for production",
-                    "auth_url": auth_url,
-                    "instructions": "Please visit the auth_url to authenticate and then use the provided code with the /oauth2callback endpoint"
-                }
-            )
+            self.service = build('gmail', 'v1', credentials=creds)
+            return self.service
             
+        except HTTPException:
+            raise
         except Exception as e:
             print(f"Production authentication error: {e}")
             raise HTTPException(
@@ -305,3 +315,130 @@ class GmailClient:
                 body = base64.urlsafe_b64decode(payload['body']['data']).decode('utf-8')
         
         return body if body else "No content available"
+    
+    def get_auth_url(self, user_id):
+        """Generate OAuth authorization URL for production"""
+        try:
+            client_config = self.get_production_client_config()
+            flow = Flow.from_client_config(
+                client_config,
+                scopes=self.SCOPES,
+                redirect_uri=client_config['web']['redirect_uris'][0]
+            )
+            
+            auth_url, state = flow.authorization_url(
+                access_type='offline',
+                include_granted_scopes='true',
+                prompt='consent',
+                state=str(user_id)  # Include user_id in state for callback
+            )
+            
+            return auth_url
+            
+        except Exception as e:
+            raise Exception(f"Failed to generate auth URL: {str(e)}")
+    
+    def complete_oauth_flow(self, authorization_code, user_id):
+        """Complete OAuth flow with authorization code"""
+        try:
+            client_config = self.get_production_client_config()
+            flow = Flow.from_client_config(
+                client_config,
+                scopes=self.SCOPES,
+                redirect_uri=client_config['web']['redirect_uris'][0]
+            )
+            
+            # Exchange authorization code for credentials
+            flow.fetch_token(code=authorization_code)
+            credentials = flow.credentials
+            
+            return credentials
+            
+        except Exception as e:
+            raise Exception(f"Failed to complete OAuth flow: {str(e)}")
+    
+    def store_oauth_token(self, user_id, credentials, db: Session):
+        """Store OAuth token in database"""
+        try:
+            from app.common.models import OAuthToken
+            
+            # Convert credentials to JSON
+            token_data = {
+                'token': credentials.token,
+                'refresh_token': credentials.refresh_token,
+                'token_uri': credentials.token_uri,
+                'client_id': credentials.client_id,
+                'client_secret': credentials.client_secret,
+                'scopes': credentials.scopes,
+                'expiry': credentials.expiry.isoformat() if credentials.expiry else None
+            }
+            
+            # Check if token already exists
+            existing_token = db.query(OAuthToken).filter(
+                OAuthToken.user_id == user_id,
+                OAuthToken.service == 'gmail'
+            ).first()
+            
+            if existing_token:
+                # Update existing token
+                existing_token.token_data = token_data
+                existing_token.updated_at = datetime.utcnow()
+            else:
+                # Create new token
+                oauth_token = OAuthToken(
+                    user_id=user_id,
+                    service='gmail',
+                    token_data=token_data
+                )
+                db.add(oauth_token)
+            
+            db.commit()
+            print(f"OAuth token stored for user {user_id}")
+            
+        except Exception as e:
+            db.rollback()
+            raise Exception(f"Failed to store OAuth token: {str(e)}")
+    
+    def get_oauth_token_from_db(self, user_id, db: Session):
+        """Retrieve OAuth token from database"""
+        try:
+            from app.common.models import OAuthToken
+            
+            oauth_token = db.query(OAuthToken).filter(
+                OAuthToken.user_id == user_id,
+                OAuthToken.service == 'gmail'
+            ).first()
+            
+            if not oauth_token:
+                return None
+            
+            token_data = oauth_token.token_data
+            
+            # Reconstruct credentials from stored data
+            credentials = Credentials(
+                token=token_data.get('token'),
+                refresh_token=token_data.get('refresh_token'),
+                token_uri=token_data.get('token_uri'),
+                client_id=token_data.get('client_id'),
+                client_secret=token_data.get('client_secret'),
+                scopes=token_data.get('scopes')
+            )
+            
+            # Set expiry if available
+            if token_data.get('expiry'):
+                from datetime import datetime
+                credentials.expiry = datetime.fromisoformat(token_data['expiry'])
+            
+            return credentials
+            
+        except Exception as e:
+            print(f"Error retrieving OAuth token: {e}")
+            return None
+    
+    def has_valid_token(self, user_id, db: Session):
+        """Check if user has a valid OAuth token"""
+        try:
+            credentials = self.get_oauth_token_from_db(user_id, db)
+            return credentials and credentials.valid
+        except Exception:
+            return False
