@@ -84,9 +84,14 @@ async def email_tools_chat(
                 if e.status_code == 401 and isinstance(e.detail, dict) and "auth_url" in e.detail:
                     return EmailToolsResponse(
                         success=False,
-                        message=f"Gmail authentication required. Please visit this URL to authorize access: {e.detail['auth_url']}",
-                        tool_results=[],
-                        has_tool_calls=False,
+                        message="Gmail authentication required. Click the button below to authorize access to your Gmail account.",
+                        tool_results=[{
+                            "type": "oauth_required",
+                            "service": "gmail",
+                            "auth_url": e.detail['auth_url'],
+                            "button_text": "Authorize Gmail Access"
+                        }],
+                        has_tool_calls=True,
                         gmail_emails=None
                     )
                 else:

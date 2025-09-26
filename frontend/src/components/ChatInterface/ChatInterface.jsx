@@ -154,14 +154,27 @@ const ChatInterface = () => {
             // Add tool results if any
             if (response.tool_results && response.tool_results.length > 0) {
               response.tool_results.forEach(toolResult => {
-                const toolMessage = {
-                  text: `Tool Result: ${JSON.stringify(toolResult.result, null, 2)}`,
-                  isUser: false,
-                  time: new Date().toISOString(),
-                  isToolResult: true,
-                  id: Date.now()
-                };
-                setMessages(prevMessages => [...prevMessages, toolMessage]);
+                // Check if this is an OAuth authorization request
+                if (toolResult.type === 'oauth_required') {
+                  const oauthMessage = {
+                    text: response.message,
+                    isUser: false,
+                    time: new Date().toISOString(),
+                    isOAuthRequired: true,
+                    oauthData: toolResult,
+                    id: Date.now()
+                  };
+                  setMessages(prevMessages => [...prevMessages, oauthMessage]);
+                } else {
+                  const toolMessage = {
+                    text: `Tool Result: ${JSON.stringify(toolResult.result, null, 2)}`,
+                    isUser: false,
+                    time: new Date().toISOString(),
+                    isToolResult: true,
+                    id: Date.now()
+                  };
+                  setMessages(prevMessages => [...prevMessages, toolMessage]);
+                }
               });
             }
           }
@@ -352,6 +365,39 @@ const ChatInterface = () => {
     setReplyingToEmail(null);
   };
 
+  // Handler for OAuth authorization
+  const handleOAuthAuthorize = (authUrl) => {
+    // Open OAuth URL in a new window
+    const authWindow = window.open(
+      authUrl, 
+      'oauth_authorization',
+      'width=600,height=700,scrollbars=yes,resizable=yes'
+    );
+
+    // Poll for window closure (user completed auth)
+    const pollTimer = setInterval(() => {
+      if (authWindow.closed) {
+        clearInterval(pollTimer);
+        // Add a message suggesting to try the request again
+        const successMessage = {
+          text: "Authorization window closed. If you completed the authorization, please try your request again.",
+          isUser: false,
+          time: new Date().toISOString(),
+          id: Date.now()
+        };
+        setMessages(prevMessages => [...prevMessages, successMessage]);
+      }
+    }, 1000);
+
+    // Clean up if window is still open after 10 minutes
+    setTimeout(() => {
+      if (!authWindow.closed) {
+        authWindow.close();
+        clearInterval(pollTimer);
+      }
+    }, 600000);
+  };
+
   // Add the missing handleKeyPress function
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !isLoading) {
@@ -449,6 +495,20 @@ const ChatInterface = () => {
                         onEmailArchived={handleEmailArchived}
                         onEmailReply={handleEmailReply}
                       />
+                    )}
+                    {message.isOAuthRequired && message.oauthData && (
+                      <div className="oauth-authorization">
+                        <button 
+                          className="oauth-authorize-btn"
+                          onClick={() => handleOAuthAuthorize(message.oauthData.auth_url)}
+                        >
+                          <i className="fas fa-shield-alt"></i>
+                          {message.oauthData.button_text || 'Authorize Access'}
+                        </button>
+                        <p className="oauth-note">
+                          This will open a secure Google authorization page in a new window.
+                        </p>
+                      </div>
                     )}
                     {message.statusIcon && (
                       <button 
