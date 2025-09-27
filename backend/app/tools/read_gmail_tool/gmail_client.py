@@ -17,7 +17,8 @@ class GmailClient:
     def __init__(self):
         self.SCOPES = [
             'https://www.googleapis.com/auth/gmail.readonly',
-            'https://www.googleapis.com/auth/gmail.modify'
+            'https://www.googleapis.com/auth/gmail.modify',
+            'https://www.googleapis.com/auth/gmail.compose'
         ]
         self.service = None
         
@@ -347,7 +348,7 @@ class GmailClient:
             client_config = self.get_production_client_config()
             flow = Flow.from_client_config(
                 client_config,
-                scopes=self.SCOPES,
+                scopes=self.SCOPES,  # Use the updated scopes
                 redirect_uri=client_config['web']['redirect_uris'][0]
             )
             
@@ -445,3 +446,20 @@ class GmailClient:
             return credentials and credentials.valid
         except Exception:
             return False
+
+    def clear_existing_tokens(self, user_id, db: Session):
+        """Clear existing OAuth tokens for a user (force re-authentication)"""
+        try:
+            from app.common.models import OAuthToken
+            
+            # Delete existing tokens from database
+            db.query(OAuthToken).filter(
+                OAuthToken.user_id == user_id,
+                OAuthToken.service == 'gmail'
+            ).delete()
+            
+            db.commit()
+            print(f"Cleared existing tokens for user {user_id}")
+            
+        except Exception as e:
+            print(f"Error clearing tokens: {e}")
