@@ -27,6 +27,7 @@ from app.tools.reply_gmail_tool.router import router as reply_gmail_router
 # Import read_gmail_router with error handling
 try:
     from app.tools.read_gmail_tool.router import router as read_gmail_router
+    from app.tools.read_gmail_tool.oauth_callback import router as oauth_callback_router  # ADD THIS IMPORT
     READ_GMAIL_AVAILABLE = True
 except ImportError as e:
     print(f"Warning: Could not import read_gmail_tool router: {e}")
@@ -34,6 +35,7 @@ except ImportError as e:
     # Create a dummy router for read_gmail_router
     from fastapi import APIRouter
     read_gmail_router = APIRouter()
+    oauth_callback_router = APIRouter()
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -70,6 +72,8 @@ app.include_router(reply_gmail_router, prefix="/email-tools", tags=["email-tools
 # Only include read_gmail_router if it's available
 if READ_GMAIL_AVAILABLE:
     app.include_router(read_gmail_router, prefix="/email-tools", tags=["email-tools"])
+    # Include the OAuth callback router separately without authentication
+    app.include_router(oauth_callback_router, tags=["oauth"])
 else:
     # Add a placeholder endpoint for read_gmail_tool
     @app.get("/email-tools/test-gmail")

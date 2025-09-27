@@ -1,6 +1,4 @@
-# In backend/app/tools/read_gmail_tool/oauth_callback.py
-
-from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from app.common.database import get_db
@@ -8,16 +6,17 @@ from .gmail_client import GmailClient
 
 router = APIRouter()
 
+# REMOVE authentication dependencies from this endpoint
 @router.get("/gmail/oauth2callback")
 async def oauth_callback(
     request: Request,
     code: str = None,
     state: str = None,
     error: str = None,
-    scope: str = None,  # ADD THIS PARAMETER
-    db: Session = Depends(get_db)
+    scope: str = None,
+    db: Session = Depends(get_db)  # Keep DB dependency but remove auth
 ):
-    """Handle OAuth 2.0 callback from Google"""
+    """Handle OAuth 2.0 callback from Google - PUBLIC ENDPOINT"""
     try:
         if error:
             raise HTTPException(
@@ -39,12 +38,12 @@ async def oauth_callback(
         
         user_id = state
         print(f"Processing OAuth callback for user {user_id}")
-        print(f"Granted scopes: {scope}")  # Log the granted scopes
-        
+        print(f"Granted scopes: {scope}")
+
         # Complete the OAuth flow
         client = GmailClient()
         
-        # Get production client config to set up the flow
+        # Get production client config
         client_config = client.get_production_client_config()
         flow_config = {
             "web": {
@@ -58,7 +57,7 @@ async def oauth_callback(
         
         flow = Flow.from_client_config(
             flow_config,
-            scopes=client.SCOPES,  # Use the updated scopes
+            scopes=client.SCOPES,
             redirect_uri=client_config['web']['redirect_uris'][0]
         )
         
@@ -69,7 +68,7 @@ async def oauth_callback(
         # Store the token in database
         client.store_oauth_token(user_id, credentials, db)
         
-        # Return a success page
+        # Return success page
         html_content = """
         <html>
             <head>

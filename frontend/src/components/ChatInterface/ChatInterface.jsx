@@ -374,14 +374,26 @@ const ChatInterface = () => {
     setReplyingToEmail(null);
   };
 
-  // Handler for OAuth authorization - IMPROVED VERSION
+  // Handler for OAuth authorization - FIXED VERSION
   const handleOAuthAuthorize = (authUrl) => {
-    // Open OAuth URL in a new window
+    // Open OAuth URL in a new window with relaxed security
     const authWindow = window.open(
       authUrl,
       'oauth_authorization',
-      'width=600,height=700,scrollbars=yes,resizable=yes'
+      'width=600,height=700,scrollbars=yes,resizable=yes,noopener=no'
     );
+
+    if (!authWindow) {
+      // If popup is blocked, show fallback message
+      const errorMessage = {
+        text: "Popup blocked! Please allow popups for this site and try again.",
+        isUser: false,
+        time: new Date().toISOString(),
+        id: Date.now()
+      };
+      setMessages(prevMessages => [...prevMessages, errorMessage]);
+      return;
+    }
 
     // Listen for messages from the OAuth callback
     const handleMessage = (event) => {
@@ -395,6 +407,7 @@ const ChatInterface = () => {
           id: Date.now()
         };
         setMessages(prevMessages => [...prevMessages, successMessage]);
+        window.removeEventListener('message', handleMessage);
       } else if (event.data.type === 'OAUTH_ERROR') {
         console.error('OAuth error:', event.data.error);
         const errorMessage = {
@@ -404,36 +417,30 @@ const ChatInterface = () => {
           id: Date.now()
         };
         setMessages(prevMessages => [...prevMessages, errorMessage]);
+        window.removeEventListener('message', handleMessage);
       }
     };
 
     window.addEventListener('message', handleMessage);
 
-    // Poll for window closure
-    const pollTimer = setInterval(() => {
-      if (authWindow.closed) {
-        clearInterval(pollTimer);
+    // Use timeout instead of polling to avoid Cross-Origin-Opener-Policy issues
+    const timeout = setTimeout(() => {
         window.removeEventListener('message', handleMessage);
-        
-        // If no message was received, show generic message
-        const message = {
-          text: "Authorization completed. You can now try your request again.",
+      // Check if we should show a timeout message
+      const timeoutMessage = {
+        text: "Authorization process completed. You can now try your request again.",
           isUser: false,
           time: new Date().toISOString(),
           id: Date.now()
         };
-        setMessages(prevMessages => [...prevMessages, message]);
-      }
-    }, 1000);
+      setMessages(prevMessages => [...prevMessages, timeoutMessage]);
+    }, 30000); // 30 second timeout
 
-    // Clean up after 10 minutes
-    setTimeout(() => {
-      if (!authWindow.closed) {
-        authWindow.close();
-      }
-      clearInterval(pollTimer);
+    // Cleanup function
+    return () => {
+      clearTimeout(timeout);
       window.removeEventListener('message', handleMessage);
-    }, 600000);
+    };
   };
 
   // Add the missing handleKeyPress function
