@@ -7,8 +7,12 @@ from .read_functions import read_gmail_inbox, archive_gmail_email
 from .schemas import GmailReadRequest
 from pydantic import BaseModel
 from .gmail_client import GmailClient
+from .oauth_callback import router as oauth_router
 
 router = APIRouter()
+
+router.include_router(oauth_router, tags=["oauth"])
+
 
 class ArchiveRequest(BaseModel):
     message_id: str

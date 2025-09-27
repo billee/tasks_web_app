@@ -78,7 +78,8 @@
 
 .chat-interface .chat-main-container {
   position: fixed;
-  top: 80px; /* Start below header */
+  top: 80px;
+  /* Start below header */
   left: 0;
   right: 0;
   bottom: 0;
@@ -146,10 +147,12 @@
 .chat-interface .response-section {
   flex: 1;
   padding: 20px;
-  padding-bottom: 100px; /* Space for chat input */
+  padding-bottom: 100px;
+  /* Space for chat input */
   overflow-y: auto;
   overflow-x: hidden;
-  margin-top: 0; /* Ensure no margin that could cause overlap */
+  margin-top: 0;
+  /* Ensure no margin that could cause overlap */
 }
 
 .chat-interface .response-section::-webkit-scrollbar {
@@ -271,6 +274,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -361,10 +365,12 @@
 }
 
 @keyframes typing {
+
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-5px);
   }
@@ -648,7 +654,7 @@
   margin: 5px 0;
 }
 
-.chat-interface .email-content-preview > div {
+.chat-interface .email-content-preview>div {
   padding: 15px;
   background-color: #f9f9f9;
   border-radius: 5px;
@@ -666,7 +672,7 @@
   margin: 5px 0;
 }
 
-.chat-interface .email-content-preview > div {
+.chat-interface .email-content-preview>div {
   padding: 15px;
   background-color: #f9f9f9;
   border-radius: 5px;
@@ -684,9 +690,9 @@
   color: #333;
   border: 1px solid #d1e7ff;
   /* Allow block content to stack */
-  display: block; 
+  display: block;
   text-align: left;
-  padding: 12px 18px; 
+  padding: 12px 18px;
 }
 
 /* Specific styles for email actions within chat interface */

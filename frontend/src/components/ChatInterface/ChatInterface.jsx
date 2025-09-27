@@ -11,9 +11,9 @@ import GmailDisplay from '../GmailDisplay/GmailDisplay';
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState([
-    { 
-      text: "Hello! I'm your AI assistant. How can I help with your business tasks today?", 
-      isUser: false, 
+    {
+      text: "Hello! I'm your AI assistant. How can I help with your business tasks today?",
+      isUser: false,
       time: new Date().toISOString(),
       id: Date.now()
     }
@@ -53,16 +53,16 @@ const ChatInterface = () => {
       // This will force a re-render and update the time displays
       setMessages(prevMessages => [...prevMessages]);
     }, 60000); // Update every minute
-  
+
     return () => clearInterval(interval);
   }, []);
 
   const handleSendMessage = async () => {
     if (inputText.trim() && !isLoading) {
       // Add user message
-      const newMessage = { 
-        text: inputText, 
-        isUser: true, 
+      const newMessage = {
+        text: inputText,
+        isUser: true,
         time: new Date().toISOString(),
         id: Date.now()
       };
@@ -70,12 +70,12 @@ const ChatInterface = () => {
       setMessages(updatedMessages);
       setInputText('');
       setIsLoading(true);
-      
+
       try {
         let response;
         const MAX_RETRIES = 2;
         let retryCount = 0;
-        
+
         // Retry logic for timeout errors
         while (retryCount <= MAX_RETRIES) {
           try {
@@ -98,9 +98,9 @@ const ChatInterface = () => {
               // It's a timeout error and we have retries left
               retryCount++;
               // Show user that we're retrying
-              const retryMessage = { 
-                text: `Request taking longer than expected. Retrying (${retryCount}/${MAX_RETRIES})...`, 
-                isUser: false, 
+              const retryMessage = {
+                text: `Request taking longer than expected. Retrying (${retryCount}/${MAX_RETRIES})...`,
+                isUser: false,
                 time: new Date().toISOString(),
                 isStatus: true,
                 id: Date.now() + retryCount
@@ -115,7 +115,7 @@ const ChatInterface = () => {
             }
           }
         }
-        
+
         console.log('Full email tools response:', JSON.stringify(response, null, 2));
 
         // Check for OAuth requirement first (regardless of success status)
@@ -145,13 +145,13 @@ const ChatInterface = () => {
               ...response.email_composition,
               messageId: Date.now() // unique ID for this composition
             });
-          } 
+          }
           // Check if response contains Gmail emails
           else if (response.gmail_emails && response.gmail_emails.length > 0) {
             console.log('Setting Gmail emails:', response.gmail_emails);
-            const gmailMessage = { 
-              text: response.message || `I found ${response.gmail_emails.length} emails in your inbox.`, 
-              isUser: false, 
+            const gmailMessage = {
+              text: response.message || `I found ${response.gmail_emails.length} emails in your inbox.`,
+              isUser: false,
               time: new Date().toISOString(),
               gmailEmails: response.gmail_emails,
               id: Date.now()
@@ -161,11 +161,11 @@ const ChatInterface = () => {
           else {
             // Add AI response to chat only if there's a message
             if (response.message && response.message !== "I've composed an email for your review:") {
-              const aiMessage = { 
-                  text: response.message, 
-                  isUser: false, 
-                  time: new Date().toISOString(),
-                  id: Date.now()
+              const aiMessage = {
+                text: response.message,
+                isUser: false,
+                time: new Date().toISOString(),
+                id: Date.now()
               };
               setMessages(prevMessages => [...prevMessages, aiMessage]);
             }
@@ -189,13 +189,13 @@ const ChatInterface = () => {
           }
         } else {
           // Handle API errors gracefully 
-          const errorText = response && response.message 
-            ? response.message 
+          const errorText = response && response.message
+            ? response.message
             : "Sorry, I'm having trouble with email tools right now. Please try again.";
-          
-          const errorResponse = { 
-            text: errorText, 
-            isUser: false, 
+
+          const errorResponse = {
+            text: errorText,
+            isUser: false,
             time: new Date().toISOString(),
             id: Date.now()
           };
@@ -204,18 +204,18 @@ const ChatInterface = () => {
       } catch (error) {
         // Handle API errors gracefully
         console.error('Error getting AI response:', error);
-        
+
         let errorMessageText = "Sorry, I'm having trouble responding right now. Please try again.";
-        
+
         if (error.code === 'ECONNABORTED') {
           errorMessageText = "The request is taking too long. Please check your connection and try again.";
         } else if (error.response && error.response.status >= 500) {
           errorMessageText = "The server is experiencing issues. Please try again later.";
         }
-        
-        const errorResponse = { 
-          text: errorMessageText, 
-          isUser: false, 
+
+        const errorResponse = {
+          text: errorMessageText,
+          isUser: false,
           time: new Date().toISOString(),
           id: Date.now()
         };
@@ -236,12 +236,12 @@ const ChatInterface = () => {
     try {
       // Send the approved email
       const response = await approveAndSendEmail(emailData);
-      
+
       if (response.success) {
         // Add success message to chat with icon and time
-        const successMessage = { 
-          text: `Email sent to ${emailData.recipient}`, 
-          isUser: false, 
+        const successMessage = {
+          text: `Email sent to ${emailData.recipient}`,
+          isUser: false,
           time: new Date().toISOString(),
           isEmailStatus: true,
           emailId: response.email_id,
@@ -253,9 +253,9 @@ const ChatInterface = () => {
         setMessages(prevMessages => [...prevMessages, successMessage]);
       } else {
         // Add error message to chat with time
-        const errorMessage = { 
-          text: `Failed to send email: ${response.message}`, 
-          isUser: false, 
+        const errorMessage = {
+          text: `Failed to send email: ${response.message}`,
+          isUser: false,
           time: new Date().toISOString(),
           id: Date.now()
         };
@@ -263,9 +263,9 @@ const ChatInterface = () => {
       }
     } catch (error) {
       // Handle error with time
-      const errorMessage = { 
-        text: "Failed to send email. Please try again.", 
-        isUser: false, 
+      const errorMessage = {
+        text: "Failed to send email. Please try again.",
+        isUser: false,
         time: new Date().toISOString(),
         id: Date.now()
       };
@@ -278,14 +278,14 @@ const ChatInterface = () => {
   // Handler for email cancellation
   const handleEmailCancel = () => {
     // Add cancellation message to chat
-    const cancelMessage = { 
-      text: 'Email composition cancelled', 
-      isUser: false, 
+    const cancelMessage = {
+      text: 'Email composition cancelled',
+      isUser: false,
       time: new Date().toISOString(),
       id: Date.now()
     };
     setMessages(prevMessages => [...prevMessages, cancelMessage]);
-    
+
     setPendingEmail(null);
   };
 
@@ -305,9 +305,9 @@ const ChatInterface = () => {
       const response = await sendGmailReply(replyData);
       if (response.success) {
         // Add success message
-        const successMessage = { 
-          text: `Reply sent to ${replyData.to_email}`, 
-          isUser: false, 
+        const successMessage = {
+          text: `Reply sent to ${replyData.to_email}`,
+          isUser: false,
           time: new Date().toISOString(),
           isEmailStatus: true,
           id: Date.now()
@@ -316,9 +316,9 @@ const ChatInterface = () => {
         setReplyingToEmail(null);
       } else {
         // Handle error
-        const errorMessage = { 
-          text: `Failed to send reply: ${response.message}`, 
-          isUser: false, 
+        const errorMessage = {
+          text: `Failed to send reply: ${response.message}`,
+          isUser: false,
           time: new Date().toISOString(),
           id: Date.now()
         };
@@ -326,9 +326,9 @@ const ChatInterface = () => {
       }
     } catch (error) {
       // Handle error
-      const errorMessage = { 
-        text: "Failed to send reply. Please try again.", 
-        isUser: false, 
+      const errorMessage = {
+        text: "Failed to send reply. Please try again.",
+        isUser: false,
         time: new Date().toISOString(),
         id: Date.now()
       };
@@ -341,27 +341,27 @@ const ChatInterface = () => {
     try {
       const response = await createGmailReplyDraft(draftData);
       if (response.success) {
-        const successMessage = { 
-          text: `Draft saved for reply to ${draftData.to_email}`, 
-          isUser: false, 
+        const successMessage = {
+          text: `Draft saved for reply to ${draftData.to_email}`,
+          isUser: false,
           time: new Date().toISOString(),
           id: Date.now()
         };
         setMessages(prevMessages => [...prevMessages, successMessage]);
         setReplyingToEmail(null);
       } else {
-        const errorMessage = { 
-          text: `Failed to save draft: ${response.message}`, 
-          isUser: false, 
+        const errorMessage = {
+          text: `Failed to save draft: ${response.message}`,
+          isUser: false,
           time: new Date().toISOString(),
           id: Date.now()
         };
         setMessages(prevMessages => [...prevMessages, errorMessage]);
       }
     } catch (error) {
-      const errorMessage = { 
-        text: "Failed to save draft. Please try again.", 
-        isUser: false, 
+      const errorMessage = {
+        text: "Failed to save draft. Please try again.",
+        isUser: false,
         time: new Date().toISOString(),
         id: Date.now()
       };
@@ -374,36 +374,65 @@ const ChatInterface = () => {
     setReplyingToEmail(null);
   };
 
-  // Handler for OAuth authorization
+  // Handler for OAuth authorization - IMPROVED VERSION
   const handleOAuthAuthorize = (authUrl) => {
     // Open OAuth URL in a new window
     const authWindow = window.open(
-      authUrl, 
+      authUrl,
       'oauth_authorization',
       'width=600,height=700,scrollbars=yes,resizable=yes'
     );
 
-    // Poll for window closure (user completed auth)
-    const pollTimer = setInterval(() => {
-      if (authWindow.closed) {
-        clearInterval(pollTimer);
-        // Add a message suggesting to try the request again
+    // Listen for messages from the OAuth callback
+    const handleMessage = (event) => {
+      if (event.data.type === 'OAUTH_SUCCESS') {
+        console.log('OAuth successful for:', event.data.service);
+        // Add success message
         const successMessage = {
-          text: "Authorization window closed. If you completed the authorization, please try your request again.",
+          text: "Gmail authentication successful! You can now use Gmail features.",
           isUser: false,
           time: new Date().toISOString(),
           id: Date.now()
         };
         setMessages(prevMessages => [...prevMessages, successMessage]);
+      } else if (event.data.type === 'OAUTH_ERROR') {
+        console.error('OAuth error:', event.data.error);
+        const errorMessage = {
+          text: `Authentication failed: ${event.data.error}`,
+          isUser: false,
+          time: new Date().toISOString(),
+          id: Date.now()
+        };
+        setMessages(prevMessages => [...prevMessages, errorMessage]);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    // Poll for window closure
+    const pollTimer = setInterval(() => {
+      if (authWindow.closed) {
+        clearInterval(pollTimer);
+        window.removeEventListener('message', handleMessage);
+        
+        // If no message was received, show generic message
+        const message = {
+          text: "Authorization completed. You can now try your request again.",
+          isUser: false,
+          time: new Date().toISOString(),
+          id: Date.now()
+        };
+        setMessages(prevMessages => [...prevMessages, message]);
       }
     }, 1000);
 
-    // Clean up if window is still open after 10 minutes
+    // Clean up after 10 minutes
     setTimeout(() => {
       if (!authWindow.closed) {
         authWindow.close();
-        clearInterval(pollTimer);
       }
+      clearInterval(pollTimer);
+      window.removeEventListener('message', handleMessage);
     }, 600000);
   };
 
@@ -415,10 +444,10 @@ const ChatInterface = () => {
   };
 
   const handleLogout = () => {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userEmail');
-      localStorage.removeItem('userName');
-      window.location.href = '/login';
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userName');
+    window.location.href = '/login';
   };
 
   const fetchEmailContent = async (emailId, recipient, subject) => {
@@ -439,15 +468,15 @@ const ChatInterface = () => {
 
   const handleEmailArchived = (emailId) => {
     // Remove the archived email from the current message's email list
-    setMessages(prevMessages => 
+    setMessages(prevMessages =>
       prevMessages.map(msg => {
         if (msg.gmailEmails) {
           const updatedEmails = msg.gmailEmails.filter(email => email.id !== emailId);
           return {
             ...msg,
             gmailEmails: updatedEmails,
-            text: updatedEmails.length === 0 
-              ? "All emails have been archived." 
+            text: updatedEmails.length === 0
+              ? "All emails have been archived."
               : `I found ${updatedEmails.length} emails in your inbox.`
           };
         }
@@ -461,28 +490,28 @@ const ChatInterface = () => {
       {/* Sticky Header */}
       <header className="chat-header">
         <div className="chat-logo">
-            <i className="fas fa-robot"></i>
-            <span>AI Assistant</span>
+          <i className="fas fa-robot"></i>
+          <span>AI Assistant</span>
         </div>
         <div className="chat-tagline">Your intelligent business productivity partner</div>
         <button className="chat-logout-button" onClick={handleLogout}>
-            <i className="fas fa-sign-out-alt"></i>
-            Logout
+          <i className="fas fa-sign-out-alt"></i>
+          Logout
         </button>
       </header>
-      
+
       {/* Main Chat Content */}
       <div className="chat-main-container">
         <div className="chat-ui-container">
           <div className="chat-sidebar">
             <div className="chat-history">
-              <div 
+              <div
                 className={`history-item ${activeMenu === 'Email Tasks' ? 'active' : ''}`}
                 onClick={() => setActiveMenu('Email Tasks')}
               >
                 Email Tasks
               </div>
-              <div 
+              <div
                 className={`history-item ${activeMenu === 'To Do List' ? 'active' : ''}`}
                 onClick={() => setActiveMenu('To Do List')}
               >
@@ -490,7 +519,7 @@ const ChatInterface = () => {
               </div>
             </div>
           </div>
-        
+
           <div className="chat-main">
             <div className="response-section">
               {messages.map((message, index) => (
@@ -498,8 +527,8 @@ const ChatInterface = () => {
                   <div className={`message-bubble ${message.isOAuthRequired ? 'ai-oauth-message' : ''}`}>
                     {message.text}
                     {message.gmailEmails && (
-                      <GmailDisplay 
-                        emails={message.gmailEmails} 
+                      <GmailDisplay
+                        emails={message.gmailEmails}
                         onEmailClick={handleGmailEmailClick}
                         onEmailArchived={handleEmailArchived}
                         onEmailReply={handleEmailReply}
@@ -507,7 +536,7 @@ const ChatInterface = () => {
                     )}
                     {message.isOAuthRequired && message.oauthData && (
                       <div className="oauth-authorization">
-                        <button 
+                        <button
                           className="oauth-authorize-btn"
                           onClick={() => handleOAuthAuthorize(message.oauthData.auth_url)}
                         >
@@ -520,8 +549,8 @@ const ChatInterface = () => {
                       </div>
                     )}
                     {message.statusIcon && (
-                      <button 
-                        className="email-view-icon" 
+                      <button
+                        className="email-view-icon"
                         onClick={() => fetchEmailContent(message.emailId, message.recipient, message.subject)}
                         title="View email content"
                       >
@@ -563,8 +592,8 @@ const ChatInterface = () => {
                   <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                     <div className="modal-header">
                       <h3>Email Content</h3>
-                      <button 
-                        className="modal-close" 
+                      <button
+                        className="modal-close"
                         onClick={() => setIsEmailModalOpen(false)}
                       >
                         &times;
@@ -575,8 +604,8 @@ const ChatInterface = () => {
                         <p><strong>To:</strong> {currentEmail.recipient}</p>
                         <p><strong>Subject:</strong> {currentEmail.subject}</p>
                       </div>
-                      <div 
-                        dangerouslySetInnerHTML={{ __html: currentEmail.content }} 
+                      <div
+                        dangerouslySetInnerHTML={{ __html: currentEmail.content }}
                       />
                     </div>
                   </div>
@@ -589,8 +618,8 @@ const ChatInterface = () => {
                   <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                     <div className="modal-header">
                       <h3>Email Details</h3>
-                      <button 
-                        className="modal-close" 
+                      <button
+                        className="modal-close"
                         onClick={() => setSelectedGmailEmail(null)}
                       >
                         &times;
@@ -629,22 +658,22 @@ const ChatInterface = () => {
 
               <div ref={messagesEndRef} />
             </div>
-          
+
             <div className="chat-input-container">
-              <input 
-                type="text" 
-                className="message-input" 
-                placeholder="Type your message here..." 
+              <input
+                type="text"
+                className="message-input"
+                placeholder="Type your message here..."
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyPress={handleKeyPress}
-              disabled={isLoading}
+                disabled={isLoading}
               />
-            <button 
-              className="send-button" 
-              onClick={handleSendMessage}
-              disabled={isLoading}
-            >
+              <button
+                className="send-button"
+                onClick={handleSendMessage}
+                disabled={isLoading}
+              >
                 <i className="fas fa-paper-plane"></i>
               </button>
             </div>

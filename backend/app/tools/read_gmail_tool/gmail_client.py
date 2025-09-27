@@ -52,7 +52,7 @@ class GmailClient:
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
                 "redirect_uris": [
-                    'https://tasks-web-app-h343.onrender.com/email-tools/gmail/oauth2callback' if self.is_production 
+                    os.getenv('GOOGLE_OAUTH_REDIRECT_URI_PROD', 'https://tasks-web-app-h343.onrender.com/email-tools/oauth2callback') if self.is_production 
                     else os.getenv('GOOGLE_OAUTH_REDIRECT_URI', 'http://localhost:8000/email-tools/oauth2callback')
                 ]
             }
