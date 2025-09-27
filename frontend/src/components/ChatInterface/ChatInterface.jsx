@@ -118,6 +118,25 @@ const ChatInterface = () => {
         
         console.log('Full email tools response:', JSON.stringify(response, null, 2));
 
+        // Check for OAuth requirement first (regardless of success status)
+        if (response && response.tool_results && response.tool_results.length > 0) {
+          const oauthResult = response.tool_results.find(result => result.type === 'oauth_required');
+          if (oauthResult) {
+            console.log('OAuth required detected:', oauthResult);
+            const oauthMessage = {
+              text: response.message,
+              isUser: false,
+              time: new Date().toISOString(),
+              isOAuthRequired: true,
+              oauthData: oauthResult,
+              id: Date.now()
+            };
+            console.log('Creating OAuth message:', oauthMessage);
+            setMessages(prevMessages => [...prevMessages, oauthMessage]);
+            return; // Exit early for OAuth handling
+          }
+        }
+
         if (response && response.success) {
           // Check if response contains email composition data
           if (response.email_composition) {
@@ -151,23 +170,11 @@ const ChatInterface = () => {
               setMessages(prevMessages => [...prevMessages, aiMessage]);
             }
 
-            // Add tool results if any
+            // Add tool results if any (non-OAuth)
             if (response.tool_results && response.tool_results.length > 0) {
               response.tool_results.forEach(toolResult => {
-                // Check if this is an OAuth authorization request
-                if (toolResult.type === 'oauth_required') {
-                  console.log('OAuth required detected:', toolResult);
-                  const oauthMessage = {
-                    text: response.message,
-                    isUser: false,
-                    time: new Date().toISOString(),
-                    isOAuthRequired: true,
-                    oauthData: toolResult,
-                    id: Date.now()
-                  };
-                  console.log('Creating OAuth message:', oauthMessage);
-                  setMessages(prevMessages => [...prevMessages, oauthMessage]);
-                } else {
+                // Skip OAuth results (handled above)
+                if (toolResult.type !== 'oauth_required') {
                   const toolMessage = {
                     text: `Tool Result: ${JSON.stringify(toolResult.result, null, 2)}`,
                     isUser: false,
