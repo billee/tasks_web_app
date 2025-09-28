@@ -11,6 +11,10 @@ from app.tools.read_gmail_tool.read_functions import read_gmail_inbox
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 
+
+class ArchiveRequest(BaseModel):
+    message_id: str
+
 router = APIRouter()
 
 # Pydantic models for chat functionality
@@ -221,3 +225,22 @@ async def get_available_tools():
     from app.tools.registry import tool_registry
     tools = tool_registry.get_tools()
     return {"tools": tools}
+
+
+
+@router.post("/archive-email")
+async def archive_email_endpoint(
+    request: ArchiveRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Archive a Gmail email"""
+    try:
+        client = GmailClient()
+        service = client.authenticate(current_user.id, db)
+        
+        result = client.archive_email(request.message_id)
+        return result
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to archive email: {str(e)}")
