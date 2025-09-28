@@ -1,12 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Dict, Any
+from pydantic import BaseModel 
 
 from app.common.database import get_db
 from app.common.auth import get_current_user
 from app.common.models import User
 from .gmail_client import GmailClient
 from .read_functions import read_gmail_inbox, archive_gmail_email, get_email_details
+
+
+class ArchiveRequest(BaseModel):
+    message_id: str
+
 
 router = APIRouter()
 
@@ -63,7 +69,7 @@ async def read_inbox_endpoint(
 
 @router.post("/archive-email")
 async def archive_email_endpoint(
-    message_id: str,
+    request: ArchiveRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
