@@ -29,7 +29,6 @@ from app.tools.reply_gmail_tool.router import router as reply_gmail_router
 # Import read_gmail_router with error handling
 try:
     from app.tools.read_gmail_tool.router import router as read_gmail_router
-    from app.tools.read_gmail_tool.oauth_callback import router as oauth_callback_router  # ADD THIS IMPORT
     READ_GMAIL_AVAILABLE = True
 except ImportError as e:
     print(f"Warning: Could not import read_gmail_tool router: {e}")
@@ -37,7 +36,6 @@ except ImportError as e:
     # Create a dummy router for read_gmail_router
     from fastapi import APIRouter
     read_gmail_router = APIRouter()
-    oauth_callback_router = APIRouter()
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
@@ -49,8 +47,8 @@ print(f"Default From Email: {os.getenv('DEFAULT_FROM_EMAIL')}")
 # Create FastAPI app
 app = FastAPI(title="Email Categorizer API", version="1.0.0")
 
-# Configure CORS
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+# Configure CORS - ADD YOUR FRONTEND DOMAIN HERE
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,https://tasks-web-app-frontend.onrender.com").split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
@@ -70,14 +68,14 @@ app.include_router(lookup_contact_router, prefix="/email-tools")
 app.include_router(save_history_router, prefix="/email-tools")
 app.include_router(contact_mapping_router, prefix="/email-tools")
 app.include_router(reply_gmail_router, prefix="/email-tools", tags=["email-tools"])
+
+# Include OAuth callback routers
 app.include_router(gmail_oauth_callback_router, tags=["oauth"])
 app.include_router(email_tools_oauth_callback_router, tags=["oauth"])
 
 # Only include read_gmail_router if it's available
 if READ_GMAIL_AVAILABLE:
     app.include_router(read_gmail_router, prefix="/email-tools", tags=["email-tools"])
-    # Include the OAuth callback router separately without authentication
-    app.include_router(oauth_callback_router, tags=["oauth"])
 else:
     # Add a placeholder endpoint for read_gmail_tool
     @app.get("/email-tools/test-gmail")
