@@ -2,22 +2,21 @@ from fastapi import APIRouter, Request, HTTPException, Depends
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 from app.common.database import get_db
-from .gmail_client import GmailClient
-from google_auth_oauthlib.flow import Flow  # Add missing import
+from app.tools.read_gmail_tool.gmail_client import GmailClient
+from google_auth_oauthlib.flow import Flow
 
 router = APIRouter()
 
-# REMOVE authentication dependencies from this endpoint
-@router.get("/gmail/oauth2callback")
-async def oauth_callback(
+@router.get("/email-tools/oauth2callback")
+async def email_tools_oauth_callback(
     request: Request,
     code: str = None,
     state: str = None,
     error: str = None,
     scope: str = None,
-    db: Session = Depends(get_db)  # Keep DB dependency but remove auth
+    db: Session = Depends(get_db)
 ):
-    """Handle OAuth 2.0 callback from Google - PUBLIC ENDPOINT"""
+    """Handle OAuth 2.0 callback for email-tools - PUBLIC ENDPOINT"""
     try:
         if error:
             raise HTTPException(
@@ -38,10 +37,10 @@ async def oauth_callback(
             )
         
         user_id = state
-        print(f"Processing OAuth callback for user {user_id}")
+        print(f"Processing email-tools OAuth callback for user {user_id}")
         print(f"Granted scopes: {scope}")
 
-        # Complete the OAuth flow
+        # Complete the OAuth flow using the same GmailClient
         client = GmailClient()
         
         # Get production client config
@@ -111,7 +110,7 @@ async def oauth_callback(
         return HTMLResponse(content=html_content)
         
     except Exception as e:
-        print(f"OAuth callback error: {e}")
+        print(f"Email-tools OAuth callback error: {e}")
         
         error_html = f"""
         <html>

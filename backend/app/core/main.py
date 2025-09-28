@@ -15,6 +15,8 @@ from app.common.auth import router as auth_router
 from app.common import models
 from app.common.database import engine
 from app.core.admin import router as admin_router
+from app.tools.read_gmail_tool.oauth_callback import router as gmail_oauth_callback_router
+from app.tools.send_email_tool.oauth_callback import router as email_tools_oauth_callback_router
 
 # Import individual tool routers
 from app.tools.send_email_tool.router import router as send_email_router
@@ -68,6 +70,8 @@ app.include_router(lookup_contact_router, prefix="/email-tools")
 app.include_router(save_history_router, prefix="/email-tools")
 app.include_router(contact_mapping_router, prefix="/email-tools")
 app.include_router(reply_gmail_router, prefix="/email-tools", tags=["email-tools"])
+app.include_router(gmail_oauth_callback_router, tags=["oauth"])
+app.include_router(email_tools_oauth_callback_router, tags=["oauth"])
 
 # Only include read_gmail_router if it's available
 if READ_GMAIL_AVAILABLE:

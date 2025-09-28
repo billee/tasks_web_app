@@ -8,6 +8,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from typing import Dict, Any
+from google.auth.transport.requests import Request
 
 class GmailReplyClient:
     def __init__(self, user_id: str):
@@ -25,7 +26,19 @@ class GmailReplyClient:
         self.tokens_dir = self.root_dir / "core" / "tokens"  # Tokens in core/tokens/
         
     def _get_credentials(self) -> Credentials:
-        """Get Gmail credentials for the user using token file (same as read tool)"""
+        """Get Gmail credentials for the user - supports both local and production"""
+        # Environment detection
+        is_production = os.getenv('RENDER') or os.getenv('ENVIRONMENT') == 'production'
+        
+        if is_production:
+            # Production: Use database tokens
+            return self._get_production_credentials()
+        else:
+            # Local: Use file-based tokens
+            return self._get_local_credentials()
+    
+    def _get_local_credentials(self) -> Credentials:
+        """Get credentials from local token file"""
         # Check if credentials file exists
         if not os.path.exists(self.credentials_path):
             raise Exception("Gmail credentials not configured. Please set up OAuth credentials.")
@@ -62,6 +75,40 @@ class GmailReplyClient:
             raise Exception(f"Gmail token not found for user {self.user_id}. Please authenticate first.")
         
         return creds
+
+    def _get_production_credentials(self) -> Credentials:
+        """Get credentials from database for production"""
+        try:
+            from app.common.database import get_db
+            from app.tools.read_gmail_tool.gmail_client import GmailClient
+            
+            # Get database session
+            db = next(get_db())
+            
+            # Use the existing GmailClient to get tokens from database
+            gmail_client = GmailClient()
+            credentials = gmail_client.get_oauth_token_from_db(self.user_id, db)
+            
+            if not credentials:
+                raise Exception(f"No Gmail token found for user {self.user_id}. Please authenticate first.")
+            
+            if not credentials.valid:
+                if credentials.expired and credentials.refresh_token:
+                    try:
+                        credentials.refresh(Request())
+                        # Update the refreshed token in database
+                        gmail_client.store_oauth_token(self.user_id, credentials, db)
+                        print("Token refreshed successfully")
+                    except Exception as e:
+                        print(f"Error refreshing token: {e}")
+                        raise Exception("Token expired and could not be refreshed. Please re-authenticate.")
+                else:
+                    raise Exception("Invalid credentials. Please re-authenticate.")
+            
+            return credentials
+            
+        except Exception as e:
+            raise Exception(f"Failed to get production credentials: {str(e)}")
     
     def _build_service(self):
         """Build Gmail service instance"""
@@ -190,3 +237,11 @@ class GmailReplyClient:
                 "error": str(error),
                 "message": f"Failed to create draft: {error}"
             }
+
+    def has_valid_token(self) -> bool:
+        """Check if user has a valid OAuth token"""
+        try:
+            creds = self._get_credentials()
+            return creds and creds.valid
+        except Exception:
+            return False
