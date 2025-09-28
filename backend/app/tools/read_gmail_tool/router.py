@@ -6,8 +6,7 @@ from pydantic import BaseModel
 from app.common.database import get_db
 from app.common.auth import get_current_user
 from app.common.models import User
-from .gmail_client import GmailClient
-from .read_functions import read_gmail_inbox, archive_gmail_email, get_email_details
+# Removed problematic imports - will import inside functions as needed
 
 
 class ArchiveRequest(BaseModel):
@@ -15,6 +14,12 @@ class ArchiveRequest(BaseModel):
 
 
 router = APIRouter()
+
+@router.get("/test-archive")
+async def test_archive_endpoint():
+    """Test endpoint to verify archive router is working"""
+    print("=== TEST ARCHIVE ENDPOINT REACHED ===")
+    return {"message": "Archive router is working!"}
 
 @router.post("/read-inbox")
 async def read_inbox_endpoint(
@@ -24,6 +29,9 @@ async def read_inbox_endpoint(
 ):
     """Read emails from Gmail inbox"""
     try:
+        # Import here to avoid module-level import issues
+        from app.tools.read_gmail_tool.gmail_client import GmailClient
+        
         # This will handle both local and production authentication
         client = GmailClient()
         service = client.authenticate(current_user.id, db)
@@ -68,21 +76,16 @@ async def read_inbox_endpoint(
         raise HTTPException(status_code=500, detail=f"Failed to read inbox: {str(e)}")
 
 @router.post("/archive-email")
-async def archive_email_endpoint(
-    request: ArchiveRequest,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Archive a Gmail email"""
-    try:
-        client = GmailClient()
-        service = client.authenticate(current_user.id, db)
-        
-        result = client.archive_email(message_id)
-        return result
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to archive email: {str(e)}")
+async def archive_email_endpoint(request: ArchiveRequest):
+    """Archive a Gmail email - SIMPLIFIED VERSION"""
+    print("🚨🚨🚨 ARCHIVE ENDPOINT REACHED - SIMPLIFIED VERSION 🚨🚨🚨")
+    print(f"Message ID: {request.message_id}")
+    
+    return {
+        "success": True,
+        "message": "Archive endpoint reached successfully - SIMPLIFIED",
+        "message_id": request.message_id
+    }
 
 @router.get("/email-details/{message_id}")
 async def get_email_details_endpoint(
@@ -92,6 +95,9 @@ async def get_email_details_endpoint(
 ):
     """Get detailed content of a specific email"""
     try:
+        # Import here to avoid module-level import issues
+        from app.tools.read_gmail_tool.gmail_client import GmailClient
+        
         client = GmailClient()
         service = client.authenticate(current_user.id, db)
         

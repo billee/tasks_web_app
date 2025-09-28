@@ -26,16 +26,9 @@ from app.tools.add_contact_mapping_tool.router import router as contact_mapping_
 from app.tools.chat_router import router as chat_router
 from app.tools.reply_gmail_tool.router import router as reply_gmail_router
 
-# Import read_gmail_router with error handling
-try:
-    from app.tools.read_gmail_tool.router import router as read_gmail_router
-    READ_GMAIL_AVAILABLE = True
-except ImportError as e:
-    print(f"Warning: Could not import read_gmail_tool router: {e}")
-    READ_GMAIL_AVAILABLE = False
-    # Create a dummy router for read_gmail_router
-    from fastapi import APIRouter
-    read_gmail_router = APIRouter()
+# Import read_gmail_router - temporarily removed error handling to see actual error
+from app.tools.read_gmail_tool.router import router as read_gmail_router
+READ_GMAIL_AVAILABLE = True
 
 # Create database tables
 models.Base.metadata.create_all(bind=engine)

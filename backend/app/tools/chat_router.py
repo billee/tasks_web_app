@@ -236,6 +236,9 @@ async def archive_email_endpoint(
 ):
     """Archive a Gmail email"""
     try:
+        # Import here to avoid circular import issues
+        from app.tools.read_gmail_tool.gmail_client import GmailClient
+        
         client = GmailClient()
         service = client.authenticate(current_user.id, db)
         
