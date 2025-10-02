@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
-
+from app.common.auth import get_password_hash
 from app.common.database import get_db
 from app.common.models import User
 from app.common.auth import get_current_user
@@ -40,7 +40,6 @@ async def create_user(
         )
     
     # Create new user
-    from app.auth import get_password_hash
     hashed_password = get_password_hash(user_data.password)
     db_user = User(
         email=user_data.email,
